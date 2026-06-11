@@ -784,9 +784,9 @@ class App{
         if(isAdmin)html+=`<div class="admin-box"><div class="admin-box-title">🔐 Résultat officiel ${hasResult?`<button onclick="app.clearResult(${match.id},'match')" class="btn-icon-red">🗑️</button>`:''}</div>
             <div class="admin-score-row">
                 <span class="admin-team">${flag(match.team1)} ${match.team1}</span>
-                <input type="number" min="0" class="score-input admin-input" value="${result.s1!==undefined?result.s1:''}" placeholder="0" onchange="app.saveResult(${match.id},'s1',this.value,'match')">
+                <input type="number" min="0" class="score-input admin-input" value="${result.s1!==undefined?result.s1:''}" placeholder="-" onchange="app.saveResult(${match.id},'s1',this.value,'match')">
                 <span class="admin-dash">—</span>
-                <input type="number" min="0" class="score-input admin-input" value="${result.s2!==undefined?result.s2:''}" placeholder="0" onchange="app.saveResult(${match.id},'s2',this.value,'match')">
+                <input type="number" min="0" class="score-input admin-input" value="${result.s2!==undefined?result.s2:''}" placeholder="-" onchange="app.saveResult(${match.id},'s2',this.value,'match')">
                 <span class="admin-team">${flag(match.team2)} ${match.team2}</span>
             </div></div>`;
         html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div>`;
@@ -804,9 +804,9 @@ class App{
                 <div class="bet-score-zone">`;
             if(canEdit){
                 const cls=isAdmin?'admin-input':'my-input';
-                html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${mePlayer.name}',${match.id},'s1',this.value,'match')">
+                html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}',${match.id},'s1',this.value,'match')">
                     <span class="bet-sep">—</span>
-                    <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${mePlayer.name}',${match.id},'s2',this.value,'match')">`;
+                    <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}',${match.id},'s2',this.value,'match')">`;
                 if(!isAdmin)html+=`<button onclick="app.lockBet('${mePlayer.name}',${match.id},'match')" class="btn btn-validate">✅ Valider</button>`;
                 if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${mePlayer.name}',${match.id},'match')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${mePlayer.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
             }else{
@@ -838,9 +838,9 @@ class App{
                     <div class="bet-player"><strong>${player.name}</strong>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
                     <div class="bet-score-zone">`;
                 if(canEdit){
-                    html+=`<span class="bet-team-flag">${flag(match.team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
+                    html+=`<span class="bet-team-flag">${flag(match.team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
                         <span class="bet-sep">—</span>
-                        <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')"><span class="bet-team-flag">${flag(match.team2)}</span>`;
+                        <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')"><span class="bet-team-flag">${flag(match.team2)}</span>`;
                     if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
                 }else{
                     if(hasBet)html+=`<span class="readonly-score">${flag(match.team1)} ${bet.s1} — ${bet.s2} ${flag(match.team2)}</span>`;
@@ -1014,9 +1014,9 @@ class App{
                 </div>
                 <div class="admin-score-row" style="margin-top:14px">
                     <span class="admin-team">${flag(team1)} ${team1}</span>
-                    <input type="number" min="0" class="score-input admin-input" value="${res.s1!==undefined?res.s1:''}" placeholder="0" onchange="app.saveResult('${playoff.id}','s1',this.value,'playoff')">
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s1!==undefined?res.s1:''}" placeholder="-" onchange="app.saveResult('${playoff.id}','s1',this.value,'playoff')">
                     <span class="admin-dash">—</span>
-                    <input type="number" min="0" class="score-input admin-input" value="${res.s2!==undefined?res.s2:''}" placeholder="0" onchange="app.saveResult('${playoff.id}','s2',this.value,'playoff')">
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s2!==undefined?res.s2:''}" placeholder="-" onchange="app.saveResult('${playoff.id}','s2',this.value,'playoff')">
                     <span class="admin-team">${flag(team2)} ${team2}</span>
                     ${hasResult?`<button onclick="app.clearResult('${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`:''}
                 </div></div>`;
@@ -1040,9 +1040,9 @@ class App{
                     <div class="bet-score-zone">`;
                 if(canEdit){
                     const cls=isAdmin?'admin-input':'my-input';
-                    html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s1',this.value,'playoff')">
+                    html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s1',this.value,'playoff')">
                         <span class="bet-sep">—</span>
-                        <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s2',this.value,'playoff')">`;
+                        <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s2',this.value,'playoff')">`;
                     if(!isAdmin)html+=`<button onclick="app.lockBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn btn-validate">✅ Valider</button>`;
                     if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
                 }else{
@@ -1074,9 +1074,9 @@ class App{
                         <div class="bet-player"><strong>${player.name}</strong>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
                         <div class="bet-score-zone">`;
                     if(canEdit){
-                        html+=`<span class="bet-team-flag">${flag(team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${player.name}','${playoff.id}','s1',this.value,'playoff')">
+                        html+=`<span class="bet-team-flag">${flag(team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s1',this.value,'playoff')">
                             <span class="bet-sep">—</span>
-                            <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${player.name}','${playoff.id}','s2',this.value,'playoff')"><span class="bet-team-flag">${flag(team2)}</span>`;
+                            <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s2',this.value,'playoff')"><span class="bet-team-flag">${flag(team2)}</span>`;
                         if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
                     }else{
                         if(hasBet)html+=`<span class="readonly-score">${flag(team1)} ${bet.s1} — ${bet.s2} ${flag(team2)}</span>`;
