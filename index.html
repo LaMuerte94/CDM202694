@@ -217,6 +217,58 @@ let _cache         = null;
 let _updatedAt     = null;
 let _saveTimer     = null;
 let _pollTimer     = null;
+let _countdownTimer = null;
+
+// ══════════════════════════════════════════════════════════
+// ⏱️  Utilitaires de date pour le timer de décompte
+// Heure des matchs = heure locale affichée (fuseau Europe/Paris UTC+2 en été)
+// ══════════════════════════════════════════════════════════
+const DATE_MAP_CDM = {
+    '11 juin':{m:6,d:11},'12 juin':{m:6,d:12},'13 juin':{m:6,d:13},'14 juin':{m:6,d:14},
+    '15 juin':{m:6,d:15},'16 juin':{m:6,d:16},'17 juin':{m:6,d:17},'18 juin':{m:6,d:18},
+    '19 juin':{m:6,d:19},'20 juin':{m:6,d:20},'21 juin':{m:6,d:21},'22 juin':{m:6,d:22},
+    '23 juin':{m:6,d:23},'24 juin':{m:6,d:24},'25 juin':{m:6,d:25},'26 juin':{m:6,d:26},
+    '27 juin':{m:6,d:27},'28 juin':{m:6,d:28},'29 juin':{m:6,d:29},'30 juin':{m:6,d:30},
+    '1 juil.':{m:7,d:1},'2 juil.':{m:7,d:2},'3 juil.':{m:7,d:3},'4 juil.':{m:7,d:4},
+    '5 juil.':{m:7,d:5},'6 juil.':{m:7,d:6},'7 juil.':{m:7,d:7},'8 juil.':{m:7,d:8},
+    '9 juil.':{m:7,d:9},'10 juil.':{m:7,d:10},'11 juil.':{m:7,d:11},'12 juil.':{m:7,d:12},
+    '13 juil.':{m:7,d:13},'14 juil.':{m:7,d:14},'15 juil.':{m:7,d:15},'16 juil.':{m:7,d:16},
+    '17 juil.':{m:7,d:17},'18 juil.':{m:7,d:18},'19 juil.':{m:7,d:19},'20 juil.':{m:7,d:20},
+    '21 juil.':{m:7,d:21},'22 juil.':{m:7,d:22},'23 juil.':{m:7,d:23},'25 juil.':{m:7,d:25},
+    '26 juil.':{m:7,d:26}
+};
+// Retourne un Date UTC à partir de la date FR + heure locale Paris (UTC+2)
+function parseMatchDateTime(dateStr, timeStr){
+    const md = DATE_MAP_CDM[dateStr];
+    if(!md) return null;
+    const hMatch = String(timeStr||'').match(/(\d{1,2})h/);
+    const hour = hMatch ? parseInt(hMatch[1]) : 0;
+    // heure Paris UTC+2 → UTC : on soustrait 2h
+    const utc = Date.UTC(2026, md.m - 1, md.d, hour - 2, 0, 0);
+    return new Date(utc);
+}
+// Retourne les ms restants avant le coup d'envoi; négatif si passé
+function msBeforeMatch(dateStr, timeStr){
+    const dt = parseMatchDateTime(dateStr, timeStr);
+    if(!dt) return null;
+    return dt.getTime() - Date.now();
+}
+// true si le match démarre dans moins de 5 minutes (ou est déjà commencé)
+function isMatchLocked(dateStr, timeStr){
+    const ms = msBeforeMatch(dateStr, timeStr);
+    return ms !== null && ms < 5 * 60 * 1000;
+}
+// Formate un décompte mm:ss ou hh:mm:ss
+function formatCountdown(ms){
+    if(ms <= 0) return null;
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if(h > 0) return `${h}h${String(m).padStart(2,'0')}m${String(s).padStart(2,'0')}s`;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
 
 const FLAGS = {
     'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿',
@@ -419,6 +471,55 @@ function startPolling(){
 }
 function stopPolling(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
 
+// ── Timer de décompte en direct ──────────────────────────
+function startCountdown(){
+    stopCountdown();
+    _countdownTimer=setInterval(tickCountdowns, 1000);
+}
+function stopCountdown(){if(_countdownTimer){clearInterval(_countdownTimer);_countdownTimer=null;}}
+
+let _prevLockState = {};   // matchId → true/false pour détecter le basculement
+
+function tickCountdowns(){
+    if(!currentUser || typeof app==='undefined') return;
+    // Met à jour tous les timers affichés sans re-render complet
+    document.querySelectorAll('[data-countdown-match]').forEach(el => {
+        const dateStr = el.dataset.countdownDate;
+        const timeStr = el.dataset.countdownTime;
+        const matchId = el.dataset.countdownMatch;
+        const ms = msBeforeMatch(dateStr, timeStr);
+        if(ms === null) return;
+        if(ms <= 0){
+            // Match commencé depuis plus de 5 min → plus de timer
+            el.style.display = 'none';
+            // Si on vient de passer le seuil, on re-render pour verrouiller les inputs
+            if(_prevLockState[matchId] === false){
+                _prevLockState[matchId] = true;
+                refreshActiveTab();
+            }
+            return;
+        }
+        const wasLocked = _prevLockState[matchId];
+        const nowLocked = ms < 5 * 60 * 1000;
+        // Détecte le basculement vers l'état verrouillé → re-render
+        if(wasLocked === false && nowLocked){
+            _prevLockState[matchId] = true;
+            refreshActiveTab();
+            return;
+        }
+        _prevLockState[matchId] = nowLocked;
+        const label = formatCountdown(ms);
+        if(!label){ el.style.display='none'; return; }
+        const inner = el.querySelector('.cd-value');
+        if(inner) inner.textContent = label;
+        el.className = 'match-countdown ' + (
+            ms < 5*60*1000  ? 'countdown-danger'  :
+            ms < 30*60*1000 ? 'countdown-warning' : 'countdown-normal'
+        );
+    });
+}
+
+
 function initLogin(){
     const d=loadData();
     const players=d.players||getDefaultPlayers();
@@ -521,10 +622,13 @@ function startApp(){
     else info.innerHTML=`<span class="info-player">👤 ${currentUser.name} — votre ligne est en bleu · sync live ☁️</span>`;
     app.init();
     startPolling();
+    startCountdown();
 }
 
 function logout(){
     stopPolling();
+    stopCountdown();
+    _prevLockState={};
     currentUser=null;
     localStorage.removeItem('cdm2026_session');
     document.getElementById('mainApp').classList.add('hidden');
@@ -693,7 +797,15 @@ class App{
         }
         if(otherPlayers.length>0){
             html+=`<div class="bets-grid">`;
-            otherPlayers.forEach((player,idx)=>{
+            // Tri : pronostics réalisés en premier, en attente ensuite
+            const sortedPlayers=[...otherPlayers].sort((a,b)=>{
+                const aBet=d.bets[a.name]?.[match.id]||{};
+                const bBet=d.bets[b.name]?.[match.id]||{};
+                const aHas=aBet.s1!==undefined&&aBet.s2!==undefined;
+                const bHas=bBet.s1!==undefined&&bBet.s2!==undefined;
+                return (bHas?1:0)-(aHas?1:0);
+            });
+            sortedPlayers.forEach((player,idx)=>{
                 const bet=d.bets[player.name]?.[match.id]||{};
                 const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
                 const isLocked=bet.locked===true;
@@ -921,7 +1033,15 @@ class App{
             }
             if(otherPlayers.length>0){
                 html+=`<div class="bets-grid">`;
-                otherPlayers.forEach((player,idx)=>{
+                // Tri : pronostics réalisés en premier, en attente ensuite
+                const sortedPlayers=[...otherPlayers].sort((a,b)=>{
+                    const aBet=d.playoffBets[a.name]?.[playoff.id]||{};
+                    const bBet=d.playoffBets[b.name]?.[playoff.id]||{};
+                    const aHas=aBet.s1!==undefined&&aBet.s2!==undefined;
+                    const bHas=bBet.s1!==undefined&&bBet.s2!==undefined;
+                    return (bHas?1:0)-(aHas?1:0);
+                });
+                sortedPlayers.forEach((player,idx)=>{
                     const bet=d.playoffBets[player.name]?.[playoff.id]||{};
                     const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
                     const isLocked=bet.locked===true;
