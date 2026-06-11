@@ -1,6 +1,14 @@
 # 🏆 CDM 2026 — Pronostics entre amis
 
-Application de pronostics pour la Coupe du Monde 2026, sans authentification (juste choisir son nom), avec sync temps réel via **Supabase**.
+## 🌐 Accès à l'application
+
+👉 **[https://bit.ly/CDM-TOUR2026](https://bit.ly/CDM-TOUR2026)**
+
+(redirige vers https://darkslategrey-trout-744243.hostingersite.com/)
+
+---
+
+Application de pronostics pour la Coupe du Monde 2026, avec connexion par nom + mot de passe (créé par l'admin) et sync temps réel via **Supabase**.
 
 ## ✨ Fonctionnalités
 
