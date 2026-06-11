@@ -267,9 +267,9 @@ header h1 { font-size:24px; }
   .bet-row-grid { padding:6px 8px; border-radius:8px; }
   .bet-player { padding:4px 6px; gap:4px; }
   .bet-player strong { font-size:12px; }
-  .bet-score-zone { padding:4px 6px; gap:4px; }
-  .bet-team-flag { font-size:16px; }
-  .bet-sep { font-size:14px; margin:0 2px; }
-  .readonly-score { font-size:14px; padding:4px 8px; }
+  .bet-score-zone { padding:6px 8px; gap:6px; }
+  .bet-team-flag { font-size:18px; }
+  .bet-sep { font-size:15px; margin:0 4px; }
+  .readonly-score { font-size:15px; padding:6px 10px; }
   .no-bet { font-size:11px; padding:4px 6px; }
 }
