@@ -2,9 +2,7 @@
 
 ## 🌐 Accès à l'application
 
-👉 **[https://bit.ly/CDM-TOUR2026](https://bit.ly/CDM-TOUR2026)**
-
-(redirige vers https://darkslategrey-trout-744243.hostingersite.com/)
+👉 **[https://darkslategrey-trout-744243.hostingersite.com/](https://darkslategrey-trout-744243.hostingersite.com/)**
 
 ---
 
