@@ -117,6 +117,14 @@
         </div>
       </div>
       <div class="setup-section">
+        <h2>🌍 Synchronisation officielle FIFA</h2>
+        <p class="info">Récupère automatiquement les scores des matchs terminés depuis l'API FIFA / api-football.com</p>
+        <div class="unlock-buttons">
+          <button onclick="app.syncOfficialResults()" class="btn btn-unlock">🔄 Synchroniser les résultats officiels</button>
+          <div id="syncStatus" class="info" style="margin-top:8px;"></div>
+        </div>
+      </div>
+      <div class="setup-section">
         <h2>🔓 Déverrouillages globaux</h2>
         <p class="info">Déverrouillez tous les pronostics d'un coup</p>
         <div class="unlock-buttons">
@@ -161,6 +169,15 @@ const SUPABASE_KEY  = 'sb_publishable_o56I7wxptZIQ0jx2rcDmjQ_Yxl2Wsfc';
 const SUPABASE_TABLE = 'cdm_state';
 const POLL_INTERVAL_MS = 10000;
 
+// ══════════════════════════════════════════════════════════
+// 🌍 API officielle (api-football.com / api-sports.io)
+// Free tier : 100 requêtes/jour. Inscription : https://dashboard.api-football.com/register
+// Laisse vide pour désactiver la sync.
+// ══════════════════════════════════════════════════════════
+const API_FOOTBALL_KEY = '';
+const API_FOOTBALL_LEAGUE = 1;     // FIFA World Cup
+const API_FOOTBALL_SEASON = 2026;
+
 let currentUser    = null;
 let playerToDelete = null;
 let _cache         = null;
@@ -186,6 +203,26 @@ const FLAGS = {
     'À déterminer':'🏳️'
 };
 function flag(t){return FLAGS[t]||'🏳️';}
+
+// Mapping FR → EN (noms utilisés par api-football.com)
+const TEAM_FR_TO_EN = {
+    'Mexique':'Mexico','Afrique du Sud':'South Africa','Corée du Sud':'Korea Republic','Tchéquie':'Czech Republic',
+    'Canada':'Canada','Bosnie-Herzégovine':'Bosnia and Herzegovina','Qatar':'Qatar','Suisse':'Switzerland',
+    'Brésil':'Brazil','Maroc':'Morocco','Écosse':'Scotland','Haïti':'Haiti',
+    'États-Unis':'USA','Turquie':'Turkey','Paraguay':'Paraguay','Australie':'Australia',
+    'Allemagne':'Germany','Équateur':'Ecuador',"Côte d'Ivoire":'Ivory Coast','Curaçao':'Curacao',
+    'Pays-Bas':'Netherlands','Suède':'Sweden','Tunisie':'Tunisia','Japon':'Japan',
+    'Belgique':'Belgium','Iran':'Iran','Nouvelle-Zélande':'New Zealand','Égypte':'Egypt',
+    'Espagne':'Spain','Uruguay':'Uruguay','Cap-Vert':'Cape Verde','Arabie saoudite':'Saudi Arabia',
+    'France':'France','Sénégal':'Senegal','Norvège':'Norway','Irak':'Iraq',
+    'Argentine':'Argentina','Algérie':'Algeria','Autriche':'Austria','Jordanie':'Jordan',
+    'Portugal':'Portugal','Colombie':'Colombia','Ouzbékistan':'Uzbekistan','RD Congo':'DR Congo',
+    'Angleterre':'England','Croatie':'Croatia','Panama':'Panama','Ghana':'Ghana',
+    'Pérou':'Peru','Chili':'Chile','Venezuela':'Venezuela','Bolivie':'Bolivia',
+    'Costa Rica':'Costa Rica','Honduras':'Honduras','Pologne':'Poland','Serbie':'Serbia'
+};
+function normalizeTeamName(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z]/g,'');}
+const TEAM_EN_TO_FR = (()=>{const m={};Object.entries(TEAM_FR_TO_EN).forEach(([fr,en])=>{m[normalizeTeamName(en)]=fr;});return m;})();
 
 function getDefaultPlayers(){
     return [
@@ -666,6 +703,66 @@ class App{
         if(target==='matches'){Object.keys(d.bets).forEach(pn=>Object.keys(d.bets[pn]).forEach(mid=>{d.bets[pn][mid].locked=false;}));this.save(d);this.renderMatches();this.toast('🔓 Tous déverrouillés !');}
         else if(target==='playoffs'){Object.keys(d.playoffBets).forEach(pn=>Object.keys(d.playoffBets[pn]).forEach(pid=>{d.playoffBets[pn][pid].locked=false;}));this.save(d);this.renderPlayoffs(document.getElementById('phaseFilter').value);this.toast('🔓 Tous déverrouillés !');}
         else if(target==='results'){d.results={};d.playoffResults={};this.save(d);this.renderMatches();this.renderPlayoffs(document.getElementById('phaseFilter').value);this.renderRanking();this.toast('🗑️ Tous les résultats effacés !');}
+    }
+
+    async syncOfficialResults(){
+        if(!currentUser.isAdmin)return;
+        const status=document.getElementById('syncStatus');
+        const setStatus=(msg,color)=>{if(status){status.textContent=msg;status.style.color=color||'#6c757d';}};
+        if(!API_FOOTBALL_KEY){
+            setStatus('⚠️ Aucune clé API configurée. Voir README pour obtenir une clé gratuite.', '#dc3545');
+            alert('Pour activer la synchronisation FIFA :\n\n1. Crée un compte gratuit sur https://dashboard.api-football.com/register\n2. Copie ta clé API\n3. Colle-la dans index.html → const API_FOOTBALL_KEY\n4. Re-déploie\n\nFree tier : 100 requêtes/jour (largement suffisant).');
+            return;
+        }
+        setStatus('🔄 Récupération des matchs depuis api-football...', '#17a2b8');
+        try{
+            const url=`https://v3.football.api-sports.io/fixtures?league=${API_FOOTBALL_LEAGUE}&season=${API_FOOTBALL_SEASON}`;
+            const r=await fetch(url,{headers:{'x-apisports-key':API_FOOTBALL_KEY}});
+            if(!r.ok)throw new Error('HTTP '+r.status);
+            const json=await r.json();
+            if(json.errors&&Object.keys(json.errors).length){throw new Error(JSON.stringify(json.errors));}
+            const fixtures=json.response||[];
+            if(!fixtures.length){setStatus('Aucun match disponible pour le moment.', '#856404');return;}
+            const d=this.d();
+            let updated=0,unmatched=[],pending=0;
+            fixtures.forEach(fx=>{
+                const finished=fx.fixture && (fx.fixture.status.short==='FT' || fx.fixture.status.short==='AET' || fx.fixture.status.short==='PEN');
+                if(!finished){pending++;return;}
+                const homeEN=fx.teams.home.name, awayEN=fx.teams.away.name;
+                const homeFR=TEAM_EN_TO_FR[normalizeTeamName(homeEN)];
+                const awayFR=TEAM_EN_TO_FR[normalizeTeamName(awayEN)];
+                if(!homeFR||!awayFR){unmatched.push(`${homeEN} vs ${awayEN}`);return;}
+                const s1=fx.goals.home, s2=fx.goals.away;
+                if(s1==null||s2==null)return;
+                // Cherche le match groupe correspondant
+                const m=this.matches.find(x=>(x.team1===homeFR&&x.team2===awayFR)||(x.team1===awayFR&&x.team2===homeFR));
+                if(m){
+                    const inverted=(m.team1===awayFR);
+                    const ns1=inverted?s2:s1, ns2=inverted?s1:s2;
+                    const cur=d.results[m.id]||{};
+                    if(cur.s1!==ns1||cur.s2!==ns2){d.results[m.id]={s1:ns1,s2:ns2};updated++;}
+                    return;
+                }
+                // Sinon cherche en playoffs (par noms d'équipes)
+                const p=this.playoffs.find(x=>{const r=d.playoffResults[x.id]||{};const t1=r.team1||x.team1,t2=r.team2||x.team2;return (t1===homeFR&&t2===awayFR)||(t1===awayFR&&t2===homeFR);});
+                if(p){
+                    const r2=d.playoffResults[p.id]||{};const t1=r2.team1||p.team1;
+                    const inverted=(t1===awayFR);
+                    const ns1=inverted?s2:s1, ns2=inverted?s1:s2;
+                    if(r2.s1!==ns1||r2.s2!==ns2){d.playoffResults[p.id]=Object.assign({},r2,{s1:ns1,s2:ns2});updated++;}
+                }else{unmatched.push(`${homeEN} vs ${awayEN}`);}
+            });
+            this.save(d);
+            this.renderMatches();this.renderPlayoffs(document.getElementById('phaseFilter').value);this.renderRanking();
+            const msgParts=[`✅ ${updated} match(s) mis à jour`,`${pending} en attente`];
+            if(unmatched.length)msgParts.push(`${unmatched.length} non reconnu(s)`);
+            setStatus(msgParts.join(' · '), updated?'#28a745':'#6c757d');
+            if(unmatched.length){console.warn('Matchs non reconnus :',unmatched);}
+            this.toast(`🌍 Sync : ${updated} résultat(s) importé(s)`);
+        }catch(e){
+            console.error('Sync FIFA error:',e);
+            setStatus('❌ Erreur : '+e.message, '#dc3545');
+        }
     }
 
     renderPlayoffs(phase='all'){

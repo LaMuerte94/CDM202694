@@ -57,6 +57,30 @@ Ouvre simplement `index.html` dans un navigateur, ou sers le dossier :
 npx serve .
 ```
 
+## 🌍 Synchronisation automatique des résultats FIFA (optionnel)
+
+L'application peut récupérer automatiquement les scores officiels depuis **api-football.com** (gratuit, 100 requêtes/jour).
+
+### Mise en place (5 min)
+
+1. Crée un compte gratuit sur https://dashboard.api-football.com/register
+2. Une fois connecté, va dans **My Account → API Key** et copie la clé
+3. Ouvre `index.html` et remplace :
+   ```js
+   const API_FOOTBALL_KEY = '';
+   ```
+   par :
+   ```js
+   const API_FOOTBALL_KEY = 'TA_CLE_ICI';
+   ```
+4. Push & redéploie
+
+### Utilisation
+
+L'admin a un bouton **🔄 Synchroniser les résultats officiels** dans l'onglet ⚙️ Admin. Un clic et tous les matchs terminés depuis le début du tournoi sont importés automatiquement (poules + phases finales). Les paris des joueurs restent intacts, seul le score officiel est mis à jour.
+
+> ⚠️ **Limite gratuite** : 100 requêtes/jour. C'est largement suffisant en cliquant manuellement (1-2 sync par jour de match).
+
 ## 🔐 Code admin par défaut
 
 `admin2026` — à changer dans l'onglet **⚙️ Admin** dès la première connexion.
