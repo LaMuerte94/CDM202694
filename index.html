@@ -395,6 +395,33 @@ function initLogin(){
     const remembered=localStorage.getItem('cdm2026_lastUser');
     if(remembered&&[...sel.options].some(o=>o.value===remembered))sel.value=remembered;
     onLoginNameChange();
+    // Tentative d'auto-login via session persistante
+    tryAutoLogin(d);
+}
+
+function tryAutoLogin(d){
+    const session=localStorage.getItem('cdm2026_session');
+    if(!session)return;
+    try{
+        const s=JSON.parse(session);
+        if(!s.name)return;
+        if(s.isAdmin){
+            if(s.code===(d.adminCode||'admin2026')){
+                currentUser={name:'Administrateur',isAdmin:true};
+                startApp();
+                return;
+            }
+        }else{
+            const player=(d.players||[]).find(p=>p.name===s.name);
+            if(player&&player.code===s.code){
+                currentUser={name:player.name,isAdmin:false};
+                startApp();
+                return;
+            }
+        }
+    }catch(e){}
+    // Session invalide, on la nettoie
+    localStorage.removeItem('cdm2026_session');
 }
 
 function onLoginNameChange(){
@@ -419,6 +446,7 @@ function login(){
         if(code===(d.adminCode||'admin2026')){
             currentUser={name:'Administrateur',isAdmin:true};
             localStorage.setItem('cdm2026_lastUser','__admin__');
+            localStorage.setItem('cdm2026_session',JSON.stringify({name:'__admin__',isAdmin:true,code:code}));
             startApp();
         }else showLoginError('❌ Code admin incorrect !');
         document.getElementById('loginCode').value='';
@@ -431,6 +459,7 @@ function login(){
     if(player.code!==code){showLoginError('❌ Mot de passe incorrect !');document.getElementById('loginCode').value='';return;}
     currentUser={name:player.name,isAdmin:false};
     localStorage.setItem('cdm2026_lastUser',player.name);
+    localStorage.setItem('cdm2026_session',JSON.stringify({name:player.name,isAdmin:false,code:code}));
     startApp();
 }
 
@@ -461,6 +490,7 @@ function startApp(){
 function logout(){
     stopPolling();
     currentUser=null;
+    localStorage.removeItem('cdm2026_session');
     document.getElementById('mainApp').classList.add('hidden');
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('loginCode').value='';
