@@ -102,10 +102,12 @@ header h1 { font-size:24px; }
 /* Table des paris */
 .bets-table { margin-top:18px; border:2px solid #e9ecef; border-radius:12px; overflow:hidden; }
 .bets-header { padding:12px 18px; background:#f8f9fa; border-bottom:2px solid #e9ecef; font-weight:700; color:#495057; font-size:14px; }
+.bets-grid { display:flex; flex-wrap:wrap; gap:8px; padding:8px; }
 .bet-row { display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid #f0f0f0; background:white; transition:background 0.2s; flex-wrap:wrap; }
 .bet-row:last-child { border-bottom:none; }
 .bet-row:hover { background:#fafafa; }
 .bet-row-me { background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%) !important; border-left:4px solid #2196f3; }
+.bet-row-grid { flex:1 1 calc(33.333% - 8px); min-width:280px; border:1px solid #e0e0e0; border-radius:8px; margin:4px; }
 .bet-player { display:flex; align-items:center; gap:8px; min-width:160px; }
 .bet-player strong { font-size:14px; color:#212529; }
 .dot-me { color:#2196f3; font-size:14px; }
@@ -228,6 +230,8 @@ header h1 { font-size:24px; }
   .bet-row { gap:8px; }
   .bet-player { min-width:auto; width:100%; }
   .bet-pts { margin-left:0; }
+  .bet-row-grid { flex:1 1 calc(50% - 8px); min-width:200px; }
+  .bets-grid { gap:6px; padding:6px; }
   .admin-team { font-size:12px; max-width:80px; }
   .playoff-teams-row { flex-direction:column; align-items:stretch; }
   .team-edit-input { max-width:100%; }
@@ -246,4 +250,5 @@ header h1 { font-size:24px; }
   .score-input { width:50px; font-size:16px; }
   .team-flag-big { font-size:24px; }
   .team-name { font-size:13px; }
+  .bet-row-grid { flex:1 1 100%; min-width:auto; }
 }
