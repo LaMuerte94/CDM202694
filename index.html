@@ -360,7 +360,9 @@ function supabaseHeaders(extra){
 
 function normalizeData(d){
     if(!d||typeof d!=='object')d={};
-    if(!Array.isArray(d.players)||d.players.length===0)d.players=getDefaultPlayers();
+    // NE PAS remplacer les joueurs existants par défaut - seulement si vraiment vide
+    if(!Array.isArray(d.players))d.players=[];
+    if(d.players.length===0)d.players=getDefaultPlayers();
     d.players=d.players.map(p=>{
         if(typeof p==='string')return{name:p,code:''};
         return{name:p.name||'',code:p.code||''};
@@ -388,11 +390,11 @@ async function supabaseGet(){
 async function supabaseSet(data){
     try{
         setSaveStatus('saving','Sauvegarde…');
-        const body=JSON.stringify({id:1,data,updated_at:new Date().toISOString()});
-        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?on_conflict=id`;
+        const body=JSON.stringify({data,updated_at:new Date().toISOString()});
+        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`;
         const r=await fetch(url,{
-            method:'POST',
-            headers:supabaseHeaders({'Prefer':'resolution=merge-duplicates,return=representation'}),
+            method:'PATCH',
+            headers:supabaseHeaders({'Prefer':'return=representation'}),
             body
         });
         if(!r.ok){const t=await r.text();throw new Error(t||'HTTP '+r.status);}
@@ -444,10 +446,21 @@ async function pollRemote(){
         const rows=await r.json();
         if(!rows||rows.length===0)return;
         const remoteAt=rows[0].updated_at;
+        // Ne rafraîchir que si le remote est plus récent ET qu'on n'est pas en train de sauvegarder
         if(remoteAt&&remoteAt!==_updatedAt&&!_saveTimer){
             const fresh=await supabaseGet();
             if(fresh){
-                _cache=normalizeData(fresh);
+                // Fusionner les données au lieu de remplacer complètement
+                const current=_cache||{};
+                const merged={
+                    ...fresh,
+                    // Préserver les pronostics locaux qui pourraient être plus récents
+                    bets:{...fresh.bets,...current.bets},
+                    playoffBets:{...fresh.playoffBets,...current.playoffBets},
+                    // Préserver les joueurs locaux pour éviter la perte
+                    players:fresh.players&&fresh.players.length>0?fresh.players:current.players
+                };
+                _cache=normalizeData(merged);
                 localStorage.setItem('cdm2026',JSON.stringify(_cache));
                 refreshActiveTab();
             }
