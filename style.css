@@ -110,6 +110,7 @@ header h1 { font-size:24px; }
 .bet-row-grid { flex:1 1 calc(20% - 8px); min-width:200px; border:1px solid #e0e0e0; border-radius:8px; margin:4px; }
 .bet-player { display:flex; align-items:center; gap:8px; min-width:160px; }
 .bet-player strong { font-size:14px; color:#212529; }
+.player-flag { font-size:18px; }
 .dot-me { color:#2196f3; font-size:14px; }
 .tag-me { background:#2196f3; color:white; padding:2px 9px; border-radius:10px; font-size:11px; font-weight:700; }
 .lock-icon { font-size:14px; }
