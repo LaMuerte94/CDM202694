@@ -215,8 +215,8 @@ header h1 { font-size:24px; }
 .btn-unlock-red:hover { box-shadow:0 5px 15px rgba(220,53,69,0.4); }
 
 /* Modale */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:10000; padding:20px; animation:fadeIn 0.2s; }
-.modal-box { background:white; border-radius:20px; padding:40px 36px; max-width:420px; width:100%; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,0.4); animation:slideUp 0.25s; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:10000; padding:20px; animation:fadeIn 0.2s; overflow-y:auto; }
+.modal-box { background:white; border-radius:20px; padding:40px 36px; max-width:420px; width:100%; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,0.4); animation:slideUp 0.25s; max-height:90vh; overflow-y:auto; }
 .modal-icon { font-size:52px; margin-bottom:14px; }
 .modal-box h3 { font-size:22px; color:#1a1a2e; margin-bottom:10px; }
 .modal-box p { font-size:14px; color:#6c757d; margin-bottom:28px; line-height:1.5; }
