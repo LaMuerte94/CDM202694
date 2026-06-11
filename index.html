@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 Paris Coupe du Monde 2026</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -199,6 +200,18 @@ function getDefaultPlayers(){
 
 function initEmptyData(){
     return {players:getDefaultPlayers(),bets:{},playoffBets:{},results:{},playoffResults:{},adminCode:'admin2026'};
+}
+
+function applyTwemoji(root){
+    if(typeof twemoji==='undefined')return;
+    try{twemoji.parse(root||document.body,{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/'});}
+    catch(e){console.warn('twemoji error',e);}
+}
+
+let _twemojiTimer=null;
+function scheduleTwemoji(){
+    clearTimeout(_twemojiTimer);
+    _twemojiTimer=setTimeout(()=>applyTwemoji(),50);
 }
 
 function setSaveStatus(state,text){
@@ -979,7 +992,13 @@ class App{
 }
 
 const app=new App();
-(async()=>{const d=await loadDataAsync();_cache=d;localStorage.setItem('cdm2026',JSON.stringify(d));initLogin();})();
+(async()=>{
+    const d=await loadDataAsync();_cache=d;localStorage.setItem('cdm2026',JSON.stringify(d));initLogin();
+    applyTwemoji();
+    const targets=[document.getElementById('matchesList'),document.getElementById('playoffsList'),document.getElementById('rankingTable'),document.getElementById('playersSetup'),document.getElementById('userBadge'),document.getElementById('matchInfo'),document.getElementById('loginName')];
+    const obs=new MutationObserver(scheduleTwemoji);
+    targets.forEach(t=>{if(t)obs.observe(t,{childList:true,subtree:true});});
+})();
 </script>
 </body>
 </html>
