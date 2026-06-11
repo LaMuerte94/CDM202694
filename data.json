@@ -1,0 +1,21 @@
+{
+  "players": [
+    {"name":"Anthony","code":"1111"},
+    {"name":"Marvin","code":"2222"},
+    {"name":"Alexandre","code":"3333"},
+    {"name":"Ludovic","code":"4444"},
+    {"name":"Kamel","code":"5555"},
+    {"name":"Marouane","code":"6666"},
+    {"name":"Nour","code":"7777"},
+    {"name":"Bruno","code":"8888"},
+    {"name":"Yvan","code":"9999"},
+    {"name":"Florian","code":"1010"},
+    {"name":"Eugene","code":"1212"},
+    {"name":"Gaston","code":"1313"}
+  ],
+  "bets": {},
+  "playoffBets": {},
+  "results": {},
+  "playoffResults": {},
+  "adminCode": "admin2026"
+}

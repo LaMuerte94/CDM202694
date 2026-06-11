@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Paris Coupe du Monde 2026</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🏆</div>
+    <h1>Coupe du Monde 2026</h1>
+    <h2>Grille de Paris</h2>
+    <p>Connectez-vous pour accéder à vos pronostics</p>
+    <div class="login-form">
+      <div class="form-group">
+        <label>👤 Votre nom</label>
+        <select id="loginName" onchange="onLoginNameChange()"><option value="">-- Choisissez votre nom --</option></select>
+      </div>
+      <div class="form-group hidden" id="adminCodeGroup">
+        <label id="loginCodeLabel">🔑 Mot de passe</label>
+        <input type="password" id="loginCode" placeholder="Mot de passe" onkeypress="if(event.key==='Enter')login()">
+      </div>
+      <button onclick="login()" class="btn btn-login">🚀 Se connecter</button>
+      <div id="loginError" class="login-error hidden">❌ Erreur de connexion !</div>
+    </div>
+    <div class="login-footer"><p>Pronostics entre amis · Coupe du Monde 2026 🇲🇽🇺🇸🇨🇦</p></div>
+  </div>
+</div>
+
+<div id="mainApp" class="hidden">
+  <div class="container">
+    <header>
+      <div class="header-left">
+        <h1>🏆 Coupe du Monde 2026</h1>
+        <div id="userBadge"></div>
+        <div id="saveStatus">
+          <span id="saveStatusIcon">💾</span>
+          <span id="saveStatusText">Sauvegarde…</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button onclick="app.exportData()" class="btn btn-secondary admin-only hidden">📥 Exporter</button>
+        <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary admin-only hidden">📤 Importer</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importData(event)">
+        <button onclick="logout()" class="btn btn-logout">🚪 Déconnexion</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <button class="tab active" onclick="app.showTab('matches')">⚽ Groupes</button>
+      <button class="tab" onclick="app.showTab('playoffs')">🏅 Phases finales</button>
+      <button class="tab" onclick="app.showTab('ranking')">📊 Classement</button>
+      <button class="tab admin-only hidden" onclick="app.showTab('setup')">⚙️ Admin</button>
+    </nav>
+
+    <div id="matches" class="tab-content active">
+      <div class="filters">
+        <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center">
+          <label>📂 Groupe :
+            <select id="groupFilter" onchange="app.filterMatches()">
+              <option value="all">Tous les groupes</option>
+            </select>
+          </label>
+          <label>📅 Tri :
+            <select id="sortFilter" onchange="app.filterMatches()">
+              <option value="group">Par groupe</option>
+              <option value="date">Par journée / date</option>
+            </select>
+          </label>
+        </div>
+        <div id="matchInfo" class="match-info-badge"></div>
+      </div>
+      <div id="matchesList"></div>
+    </div>
+
+    <div id="playoffs" class="tab-content">
+      <div class="filters">
+        <label>🏆 Phase :
+          <select id="phaseFilter" onchange="app.filterPlayoffs()">
+            <option value="all">Toutes les phases</option>
+            <option value="16es de finale">16es de finale</option>
+            <option value="8es de finale">8es de finale</option>
+            <option value="Quarts de finale">Quarts de finale</option>
+            <option value="Demi-finales">Demi-finales</option>
+            <option value="Match 3e place">Match 3e place</option>
+            <option value="FINALE">FINALE</option>
+          </select>
+        </label>
+      </div>
+      <div id="playoffsList"></div>
+    </div>
+
+    <div id="ranking" class="tab-content">
+      <h2>📊 Classement général</h2>
+      <div id="statsSummary" class="stats-summary"></div>
+      <div id="rankingTable"></div>
+    </div>
+
+    <div id="setup" class="tab-content">
+      <div class="setup-section">
+        <div class="section-header-row">
+          <div><h2>👥 Gestion des joueurs</h2><p class="info">Créez, modifiez ou supprimez les joueurs</p></div>
+          <button onclick="app.addPlayer()" class="btn btn-add-player">➕ Ajouter un joueur</button>
+        </div>
+        <div id="playersSetup" class="players-grid"></div>
+        <button onclick="app.savePlayersSetup()" class="btn btn-primary">💾 Sauvegarder les joueurs</button>
+      </div>
+      <div class="setup-section">
+        <h2>🔑 Code administrateur</h2>
+        <p class="info">Modifiez le code de connexion administrateur</p>
+        <div class="admin-code-row">
+          <input type="text" id="newAdminCode" placeholder="Nouveau code admin" class="admin-code-input">
+          <button onclick="app.saveAdminCode()" class="btn btn-primary">💾 Changer le code admin</button>
+        </div>
+      </div>
+      <div class="setup-section">
+        <h2>🔓 Déverrouillages globaux</h2>
+        <p class="info">Déverrouillez tous les pronostics d'un coup</p>
+        <div class="unlock-buttons">
+          <button onclick="app.unlockAll('matches')" class="btn btn-unlock">🔓 Déverrouiller tous les pronostics (Groupes)</button>
+          <button onclick="app.unlockAll('playoffs')" class="btn btn-unlock">🔓 Déverrouiller tous les pronostics (Playoffs)</button>
+          <button onclick="app.unlockAll('results')" class="btn btn-unlock btn-unlock-red">🗑️ Effacer tous les résultats officiels</button>
+        </div>
+      </div>
+      <div class="setup-section">
+        <h2>📖 Règles du jeu</h2>
+        <div class="rules">
+          <div class="rule-item"><span class="pts-badge pts5">5 pts</span><span>Score exact (2-1 = 2-1)</span></div>
+          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Bon résultat + bon écart (2-1 = 3-2)</span></div>
+          <div class="rule-item"><span class="pts-badge pts1">1 pt</span><span>Bon résultat uniquement (2-1 = 2-0)</span></div>
+          <div class="rule-item"><span class="pts-badge pts0">0 pt</span><span>Mauvais pronostic</span></div>
+          <div class="rule-item"><span class="pts-badge pts5">5 pts</span><span>Phases finales : score exact</span></div>
+          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Phases finales : bon vainqueur</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="deleteModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3>Supprimer le joueur ?</h3>
+    <p id="deleteModalMsg">Tous les pronostics de ce joueur seront également supprimés.</p>
+    <div class="modal-actions">
+      <button onclick="app.confirmDeletePlayer()" class="btn btn-danger">🗑️ Supprimer</button>
+      <button onclick="app.closeDeleteModal()" class="btn btn-secondary">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// ☁️  Backend Supabase (sync temps réel entre amis)
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://hwcfutwfruasepbtvwph.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_o56I7wxptZIQ0jx2rcDmjQ_Yxl2Wsfc';
+const SUPABASE_TABLE = 'cdm_state';
+const POLL_INTERVAL_MS = 10000;
+
+let currentUser    = null;
+let playerToDelete = null;
+let _cache         = null;
+let _updatedAt     = null;
+let _saveTimer     = null;
+let _pollTimer     = null;
+
+const FLAGS = {
+    'Mexique':'🇲🇽','Afrique du Sud':'🇿🇦','Corée du Sud':'🇰🇷','Tchéquie':'🇨🇿',
+    'Canada':'🇨🇦','Bosnie-Herzégovine':'🇧🇦','Qatar':'🇶🇦','Suisse':'🇨🇭',
+    'Brésil':'🇧🇷','Maroc':'🇲🇦','Écosse':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Haïti':'🇭🇹',
+    'États-Unis':'🇺🇸','Turquie':'🇹🇷','Paraguay':'🇵🇾','Australie':'🇦🇺',
+    'Allemagne':'🇩🇪','Équateur':'🇪🇨',"Côte d'Ivoire":'🇨🇮','Curaçao':'🇨🇼',
+    'Pays-Bas':'🇳🇱','Suède':'🇸🇪','Tunisie':'🇹🇳','Japon':'🇯🇵',
+    'Belgique':'🇧🇪','Iran':'🇮🇷','Nouvelle-Zélande':'🇳🇿','Égypte':'🇪🇬',
+    'Espagne':'🇪🇸','Uruguay':'🇺🇾','Cap-Vert':'🇨🇻','Arabie saoudite':'🇸🇦',
+    'France':'🇫🇷','Sénégal':'🇸🇳','Norvège':'🇳🇴','Irak':'🇮🇶',
+    'Argentine':'🇦🇷','Algérie':'🇩🇿','Autriche':'🇦🇹','Jordanie':'🇯🇴',
+    'Portugal':'🇵🇹','Colombie':'🇨🇴','Ouzbékistan':'🇺🇿','RD Congo':'🇨🇩',
+    'Angleterre':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatie':'🇭🇷','Panama':'🇵🇦','Ghana':'🇬🇭',
+    'Pérou':'🇵🇪','Chili':'🇨🇱','Venezuela':'🇻🇪','Bolivie':'🇧🇴',
+    'Costa Rica':'🇨🇷','Honduras':'🇭🇳','Pologne':'🇵🇱','Serbie':'🇷🇸',
+    'À déterminer':'🏳️'
+};
+function flag(t){return FLAGS[t]||'🏳️';}
+
+function getDefaultPlayers(){
+    return [
+        {name:'Anthony',code:'1111'},{name:'Marvin',code:'2222'},
+        {name:'Alexandre',code:'3333'},{name:'Ludovic',code:'4444'},
+        {name:'Kamel',code:'5555'},{name:'Marouane',code:'6666'},
+        {name:'Nour',code:'7777'},{name:'Bruno',code:'8888'},
+        {name:'Yvan',code:'9999'},{name:'Florian',code:'1010'},
+        {name:'Eugene',code:'1212'},{name:'Gaston',code:'1313'}
+    ];
+}
+
+function initEmptyData(){
+    return {players:getDefaultPlayers(),bets:{},playoffBets:{},results:{},playoffResults:{},adminCode:'admin2026'};
+}
+
+function setSaveStatus(state,text){
+    const el=document.getElementById('saveStatus');
+    const icon=document.getElementById('saveStatusIcon');
+    const txt=document.getElementById('saveStatusText');
+    if(!el)return;
+    el.className='visible '+state;
+    txt.textContent=text;
+    icon.textContent=state==='saving'?'⏳':state==='saved'?'☁️':'⚠️';
+    if(state==='saved'||state==='error'){
+        clearTimeout(el._hideTimer);
+        el._hideTimer=setTimeout(()=>el.classList.remove('visible'),3000);
+    }
+}
+
+function supabaseHeaders(extra){
+    return Object.assign({
+        'apikey':SUPABASE_KEY,
+        'Authorization':`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json'
+    },extra||{});
+}
+
+function normalizeData(d){
+    if(!d||typeof d!=='object')d={};
+    if(!Array.isArray(d.players)||d.players.length===0)d.players=getDefaultPlayers();
+    d.players=d.players.map(p=>{
+        if(typeof p==='string')return{name:p,code:''};
+        return{name:p.name||'',code:p.code||''};
+    }).filter(p=>p.name);
+    if(!d.bets)d.bets={};
+    if(!d.playoffBets)d.playoffBets={};
+    if(!d.results)d.results={};
+    if(!d.playoffResults)d.playoffResults={};
+    if(!d.adminCode)d.adminCode='admin2026';
+    return d;
+}
+
+async function supabaseGet(){
+    try{
+        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1&select=data,updated_at`;
+        const r=await fetch(url,{headers:supabaseHeaders(),cache:'no-store'});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const rows=await r.json();
+        if(!rows||rows.length===0)return null;
+        _updatedAt=rows[0].updated_at;
+        return rows[0].data||null;
+    }catch(e){console.warn('Supabase GET error:',e);return null;}
+}
+
+async function supabaseSet(data){
+    try{
+        setSaveStatus('saving','Sauvegarde…');
+        const body=JSON.stringify({id:1,data,updated_at:new Date().toISOString()});
+        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?on_conflict=id`;
+        const r=await fetch(url,{
+            method:'POST',
+            headers:supabaseHeaders({'Prefer':'resolution=merge-duplicates,return=representation'}),
+            body
+        });
+        if(!r.ok){const t=await r.text();throw new Error(t||'HTTP '+r.status);}
+        const rows=await r.json();
+        if(rows&&rows[0])_updatedAt=rows[0].updated_at;
+        setSaveStatus('saved','Sauvegardé ✅');
+        localStorage.setItem('cdm2026',JSON.stringify(data));
+        return true;
+    }catch(e){
+        console.error('Supabase SET error:',e);
+        setSaveStatus('error','Erreur sauvegarde !');
+        localStorage.setItem('cdm2026',JSON.stringify(data));
+        return false;
+    }
+}
+
+async function loadDataAsync(){
+    if(_cache)return _cache;
+    let d=await supabaseGet();
+    if(!d){const s=localStorage.getItem('cdm2026');if(s){try{d=JSON.parse(s);}catch(e){}}}
+    if(!d)d=initEmptyData();
+    d=normalizeData(d);
+    _cache=d;
+    localStorage.setItem('cdm2026',JSON.stringify(d));
+    return d;
+}
+
+function loadData(){
+    if(_cache)return JSON.parse(JSON.stringify(_cache));
+    const s=localStorage.getItem('cdm2026');
+    if(s){try{return normalizeData(JSON.parse(s));}catch(e){}}
+    return initEmptyData();
+}
+
+function saveData(data){
+    data=normalizeData(data);
+    _cache=JSON.parse(JSON.stringify(data));
+    localStorage.setItem('cdm2026',JSON.stringify(data));
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(()=>supabaseSet(data),800);
+}
+
+async function pollRemote(){
+    if(!currentUser)return;
+    try{
+        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1&select=updated_at`;
+        const r=await fetch(url,{headers:supabaseHeaders(),cache:'no-store'});
+        if(!r.ok)return;
+        const rows=await r.json();
+        if(!rows||rows.length===0)return;
+        const remoteAt=rows[0].updated_at;
+        if(remoteAt&&remoteAt!==_updatedAt&&!_saveTimer){
+            const fresh=await supabaseGet();
+            if(fresh){
+                _cache=normalizeData(fresh);
+                localStorage.setItem('cdm2026',JSON.stringify(_cache));
+                refreshActiveTab();
+            }
+        }
+    }catch(e){/* silent */}
+}
+
+function refreshActiveTab(){
+    if(typeof app==='undefined'||!app)return;
+    const active=document.querySelector('.tab-content.active');
+    if(!active)return;
+    if(active.id==='matches')app.renderMatches();
+    else if(active.id==='playoffs')app.renderPlayoffs(document.getElementById('phaseFilter').value);
+    else if(active.id==='ranking')app.renderRanking();
+    else if(active.id==='setup')app.renderSetup();
+}
+
+function startPolling(){
+    stopPolling();
+    _pollTimer=setInterval(pollRemote,POLL_INTERVAL_MS);
+}
+function stopPolling(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
+
+function initLogin(){
+    const d=loadData();
+    const players=d.players||getDefaultPlayers();
+    const sel=document.getElementById('loginName');
+    sel.innerHTML='<option value="">-- Choisissez votre nom --</option>';
+    players.forEach(p=>{sel.innerHTML+=`<option value="${p.name}">${p.name}</option>`;});
+    sel.innerHTML+=`<option value="__admin__">👑 Administrateur</option>`;
+    const remembered=localStorage.getItem('cdm2026_lastUser');
+    if(remembered&&[...sel.options].some(o=>o.value===remembered))sel.value=remembered;
+    onLoginNameChange();
+}
+
+function onLoginNameChange(){
+    const name=document.getElementById('loginName').value;
+    const grp=document.getElementById('adminCodeGroup');
+    const lbl=document.getElementById('loginCodeLabel');
+    const inp=document.getElementById('loginCode');
+    if(!name){grp.classList.add('hidden');return;}
+    grp.classList.remove('hidden');
+    if(name==='__admin__'){lbl.textContent='🔑 Code administrateur';inp.placeholder='Code admin';}
+    else{lbl.textContent='🔑 Mot de passe';inp.placeholder='Votre mot de passe';}
+}
+
+function login(){
+    const d=loadData();
+    const name=document.getElementById('loginName').value;
+    const code=(document.getElementById('loginCode').value||'').trim();
+    document.getElementById('loginError').classList.add('hidden');
+    if(!name){showLoginError('⚠️ Choisissez votre nom !');return;}
+    if(name==='__admin__'){
+        if(!code){showLoginError('⚠️ Entrez le code admin !');return;}
+        if(code===(d.adminCode||'admin2026')){
+            currentUser={name:'Administrateur',isAdmin:true};
+            localStorage.setItem('cdm2026_lastUser','__admin__');
+            startApp();
+        }else showLoginError('❌ Code admin incorrect !');
+        document.getElementById('loginCode').value='';
+        return;
+    }
+    const player=(d.players||[]).find(p=>p.name===name);
+    if(!player){showLoginError('❌ Joueur introuvable !');return;}
+    if(!player.code){showLoginError('⚠️ Aucun mot de passe défini. Demandez à l\'admin.');return;}
+    if(!code){showLoginError('⚠️ Entrez votre mot de passe !');return;}
+    if(player.code!==code){showLoginError('❌ Mot de passe incorrect !');document.getElementById('loginCode').value='';return;}
+    currentUser={name:player.name,isAdmin:false};
+    localStorage.setItem('cdm2026_lastUser',player.name);
+    startApp();
+}
+
+function showLoginError(msg){
+    const e=document.getElementById('loginError');
+    e.textContent=msg;e.classList.remove('hidden');
+    setTimeout(()=>e.classList.add('hidden'),3000);
+}
+
+function startApp(){
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    const badge=document.getElementById('userBadge');
+    if(currentUser.isAdmin){
+        badge.innerHTML='<span class="badge-admin">👑 Administrateur</span>';
+        document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+    }else{
+        badge.innerHTML=`<span class="badge-player">👤 ${currentUser.name}</span>`;
+        document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));
+    }
+    const info=document.getElementById('matchInfo');
+    if(currentUser.isAdmin)info.innerHTML='<span class="info-admin">👑 Admin — vous pouvez tout modifier</span>';
+    else info.innerHTML=`<span class="info-player">👤 ${currentUser.name} — votre ligne est en bleu · sync live ☁️</span>`;
+    app.init();
+    startPolling();
+}
+
+function logout(){
+    stopPolling();
+    currentUser=null;
+    document.getElementById('mainApp').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginCode').value='';
+    document.getElementById('loginError').classList.add('hidden');
+    initLogin();
+}
+
+class App{
+    constructor(){this.matches=[];this.playoffs=[];this.buildMatches();this.buildPlayoffs();}
+    d(){return loadData();}
+    save(data){saveData(data);this.toast('✅ Sauvegardé !');}
+    init(){this.populateFilters();this.showTab('matches');}
+
+    showTab(tab){
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(btn=>{if((btn.getAttribute('onclick')||'').includes(`'${tab}'`))btn.classList.add('active');});
+        const el=document.getElementById(tab);if(el)el.classList.add('active');
+        if(tab==='matches')this.renderMatches();
+        if(tab==='playoffs')this.renderPlayoffs();
+        if(tab==='ranking')this.renderRanking();
+        if(tab==='setup')this.renderSetup();
+    }
+
+    populateFilters(){
+        const gf=document.getElementById('groupFilter');
+        const groups=[...new Set(this.matches.map(m=>m.group))];
+        gf.innerHTML='<option value="all">Tous les groupes</option>'+groups.map(g=>`<option value="${g}">Groupe ${g}</option>`).join('');
+    }
+
+    filterMatches(){this.renderMatches();}
+    filterPlayoffs(){this.renderPlayoffs(document.getElementById('phaseFilter').value);}
+    teamDisplay(name,big=false){return `<span class="${big?'team-flag-big':'team-flag'}">${flag(name)}</span><span>${name}</span>`;}
+
+    dateOrder(dateStr){
+        const map={
+            '11 juin':1,'12 juin':2,'13 juin':3,'14 juin':4,'15 juin':5,
+            '16 juin':6,'17 juin':7,'18 juin':8,'19 juin':9,'20 juin':10,
+            '21 juin':11,'22 juin':12,'23 juin':13,'24 juin':14,'25 juin':15,
+            '26 juin':16,'27 juin':17,'28 juin':18,'29 juin':19,'30 juin':20,
+            '1 juil.':21,'2 juil.':22,'3 juil.':23,'4 juil.':24,'5 juil.':25,
+            '6 juil.':26,'7 juil.':27,'8 juil.':28,'9 juil.':29,'10 juil.':30,
+            '11 juil.':31,'12 juil.':32,'13 juil.':33,'14 juil.':34,'15 juil.':35,
+            '16 juil.':36,'17 juil.':37,'18 juil.':38,'19 juil.':39,'20 juil.':40,
+            '21 juil.':41,'22 juil.':42,'23 juil.':43,'24 juil.':44,'25 juil.':45,
+            '26 juil.':46
+        };
+        return map[dateStr]||99;
+    }
+
+    dayName(dateStr){
+        const map={
+            '11 juin':'Jeudi 11 juin 2026','12 juin':'Vendredi 12 juin 2026',
+            '13 juin':'Samedi 13 juin 2026','14 juin':'Dimanche 14 juin 2026',
+            '15 juin':'Lundi 15 juin 2026','16 juin':'Mardi 16 juin 2026',
+            '17 juin':'Mercredi 17 juin 2026','18 juin':'Jeudi 18 juin 2026',
+            '19 juin':'Vendredi 19 juin 2026','20 juin':'Samedi 20 juin 2026',
+            '21 juin':'Dimanche 21 juin 2026','22 juin':'Lundi 22 juin 2026',
+            '23 juin':'Mardi 23 juin 2026','24 juin':'Mercredi 24 juin 2026',
+            '25 juin':'Jeudi 25 juin 2026','26 juin':'Vendredi 26 juin 2026',
+            '27 juin':'Samedi 27 juin 2026','28 juin':'Dimanche 28 juin 2026',
+            '29 juin':'Lundi 29 juin 2026',
+            '1 juil.':'Mercredi 1er juillet 2026','2 juil.':'Jeudi 2 juillet 2026',
+            '3 juil.':'Vendredi 3 juillet 2026','4 juil.':'Samedi 4 juillet 2026',
+            '5 juil.':'Dimanche 5 juillet 2026','6 juil.':'Lundi 6 juillet 2026',
+            '7 juil.':'Mardi 7 juillet 2026','8 juil.':'Mercredi 8 juillet 2026',
+            '9 juil.':'Jeudi 9 juillet 2026','10 juil.':'Vendredi 10 juillet 2026',
+            '11 juil.':'Samedi 11 juillet 2026','12 juil.':'Dimanche 12 juillet 2026',
+            '13 juil.':'Lundi 13 juillet 2026','14 juil.':'Mardi 14 juillet 2026',
+            '15 juil.':'Mercredi 15 juillet 2026','16 juil.':'Jeudi 16 juillet 2026',
+            '17 juil.':'Vendredi 17 juillet 2026','18 juil.':'Samedi 18 juillet 2026',
+            '19 juil.':'Dimanche 19 juillet 2026','20 juil.':'Lundi 20 juillet 2026',
+            '21 juil.':'Mardi 21 juillet 2026','22 juil.':'Mercredi 22 juillet 2026',
+            '23 juil.':'Jeudi 23 juillet 2026','25 juil.':'Samedi 25 juillet 2026',
+            '26 juil.':'Dimanche 26 juillet 2026'
+        };
+        return map[dateStr]||dateStr;
+    }
+
+    renderMatches(){
+        const group=document.getElementById('groupFilter').value;
+        const sort=document.getElementById('sortFilter').value;
+        let list=group==='all'?[...this.matches]:this.matches.filter(m=>m.group===group);
+        if(sort==='date'){
+            list.sort((a,b)=>this.dateOrder(a.date)-this.dateOrder(b.date)||a.id-b.id);
+            const byDate={};
+            list.forEach(m=>{(byDate[m.date]=byDate[m.date]||[]).push(m);});
+            const dateKeys=Object.keys(byDate).sort((a,b)=>this.dateOrder(a)-this.dateOrder(b));
+            let html='';
+            dateKeys.forEach(date=>{
+                const dm=byDate[date];
+                html+=`<div class="day-separator"><span class="day-icon">📅</span><span class="day-label">${this.dayName(date)}</span><span class="day-count">${dm.length} match${dm.length>1?'s':''}</span></div>`;
+                html+=dm.map(m=>this.buildMatchCard(m)).join('');
+            });
+            document.getElementById('matchesList').innerHTML=html;
+        }else{
+            list.sort((a,b)=>a.group<b.group?-1:a.group>b.group?1:a.id-b.id);
+            const byGroup={};
+            list.forEach(m=>{(byGroup[m.group]=byGroup[m.group]||[]).push(m);});
+            const groupKeys=Object.keys(byGroup).sort();
+            let html='';
+            groupKeys.forEach(g=>{
+                const gm=byGroup[g];
+                html+=`<div class="day-separator group-sep"><span class="day-icon">🏆</span><span class="day-label">Groupe ${g}</span><span class="day-count">${gm.length} matchs</span></div>`;
+                html+=gm.map(m=>this.buildMatchCard(m)).join('');
+            });
+            document.getElementById('matchesList').innerHTML=html;
+        }
+    }
+
+    buildMatchCard(match){
+        const d=this.d(),result=d.results[match.id]||{};
+        const hasResult=result.s1!==undefined&&result.s2!==undefined;
+        const isAdmin=currentUser.isAdmin,me=currentUser.name;
+        let html=`<div class="match-card ${hasResult?'is-finished':''}">
+            <div class="match-header">
+                <span class="group-badge">Groupe ${match.group}</span>
+                <span class="match-date">📅 ${match.date}</span>
+                ${match.time?`<span class="match-date">🕐 ${match.time}</span>`:''}
+                ${match.stadium?`<span class="match-stadium">📍 ${match.stadium}</span>`:''}
+                <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En cours'}</span>
+            </div>
+            <div class="match-teams">
+                <div class="team-name">${this.teamDisplay(match.team1,true)}</div>
+                <div class="versus">VS</div>
+                <div class="team-name">${this.teamDisplay(match.team2,true)}</div>
+            </div>`;
+        if(hasResult)html+=`<div class="official-result">⚽ Résultat officiel : <strong>${flag(match.team1)} ${match.team1} ${result.s1} — ${result.s2} ${match.team2} ${flag(match.team2)}</strong></div>`;
+        if(isAdmin)html+=`<div class="admin-box"><div class="admin-box-title">🔐 Résultat officiel ${hasResult?`<button onclick="app.clearResult(${match.id},'match')" class="btn-icon-red">🗑️</button>`:''}</div>
+            <div class="admin-score-row">
+                <span class="admin-team">${flag(match.team1)} ${match.team1}</span>
+                <input type="number" min="0" class="score-input admin-input" value="${result.s1!==undefined?result.s1:''}" placeholder="0" onchange="app.saveResult(${match.id},'s1',this.value,'match')">
+                <span class="admin-dash">—</span>
+                <input type="number" min="0" class="score-input admin-input" value="${result.s2!==undefined?result.s2:''}" placeholder="0" onchange="app.saveResult(${match.id},'s2',this.value,'match')">
+                <span class="admin-team">${flag(match.team2)} ${match.team2}</span>
+            </div></div>`;
+        html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div>`;
+        d.players.forEach(player=>{
+            const bet=d.bets[player.name]?.[match.id]||{};
+            const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+            const isLocked=bet.locked===true,isMe=player.name===me&&!isAdmin;
+            const canEdit=isAdmin?true:(isMe&&!isLocked&&!hasResult);
+            let ptsHtml='';
+            if(hasResult&&hasBet){const pts=this.calcPoints({s1:bet.s1,s2:bet.s2},{s1:result.s1,s2:result.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
+            html+=`<div class="bet-row ${isMe?'bet-row-me':''}">
+                <div class="bet-player">${isMe?'<span class="dot-me">●</span>':''}<strong>${player.name}</strong>${isMe?'<span class="tag-me">Vous</span>':''}${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
+                <div class="bet-score-zone">`;
+            if(canEdit){
+                const cls=isAdmin?'admin-input':'my-input';
+                html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
+                    <span class="bet-sep">—</span>
+                    <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')">`;
+                if(!isAdmin&&isMe)html+=`<button onclick="app.lockBet('${player.name}',${match.id},'match')" class="btn btn-validate">✅ Valider</button>`;
+                if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
+            }else{
+                if(hasBet)html+=`<span class="readonly-score">${bet.s1} — ${bet.s2}</span>`;
+                else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
+                if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-icon">🔓</button>`;
+                if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
+            }
+            html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
+        });
+        html+=`</div></div>`;return html;
+    }
+
+    saveBet(playerName,matchId,field,value,type){
+        const d=this.d();
+        if(!currentUser.isAdmin&&playerName!==currentUser.name)return;
+        if(!currentUser.isAdmin){const store=type==='match'?d.bets:d.playoffBets;if(store[playerName]?.[matchId]?.locked){this.toast('🔒 Pronostic verrouillé !');return;}}
+        if(type==='match'){
+            if(!d.bets[playerName])d.bets[playerName]={};
+            if(!d.bets[playerName][matchId])d.bets[playerName][matchId]={};
+            d.bets[playerName][matchId][field]=parseInt(value)||0;
+        }else{
+            if(!d.playoffBets[playerName])d.playoffBets[playerName]={};
+            if(!d.playoffBets[playerName][matchId])d.playoffBets[playerName][matchId]={};
+            d.playoffBets[playerName][matchId][field]=parseInt(value)||0;
+        }
+        this.save(d);
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+    }
+
+    lockBet(playerName,matchId,type){
+        const d=this.d(),store=type==='match'?d.bets:d.playoffBets,bet=store[playerName]?.[matchId];
+        if(!bet||bet.s1===undefined||bet.s2===undefined){this.toast('⚠️ Saisir les deux scores avant de valider !');return;}
+        store[playerName][matchId].locked=true;this.save(d);this.toast('🔒 Pronostic verrouillé !');
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+    }
+
+    adminUnlockBet(playerName,matchId,type){
+        if(!currentUser.isAdmin)return;
+        const d=this.d(),store=type==='match'?d.bets:d.playoffBets;
+        if(store[playerName]?.[matchId])store[playerName][matchId].locked=false;
+        this.save(d);this.toast(`🔓 ${playerName} déverrouillé !`);
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+    }
+
+    adminClearBet(playerName,matchId,type){
+        if(!currentUser.isAdmin)return;
+        if(!confirm(`Effacer le pronostic de ${playerName} ?`))return;
+        const d=this.d(),store=type==='match'?d.bets:d.playoffBets;
+        if(store[playerName])delete store[playerName][matchId];
+        this.save(d);this.toast(`🗑️ Pronostic de ${playerName} effacé !`);
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+    }
+
+    clearResult(matchId,type){
+        if(!currentUser.isAdmin)return;
+        if(!confirm('Effacer ce résultat officiel ?'))return;
+        const d=this.d();
+        if(type==='match')delete d.results[matchId];
+        else if(d.playoffResults[matchId]){delete d.playoffResults[matchId].s1;delete d.playoffResults[matchId].s2;}
+        this.save(d);
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+        this.renderRanking();
+    }
+
+    saveResult(matchId,field,value,type){
+        if(!currentUser.isAdmin)return;
+        const d=this.d();
+        if(type==='match'){if(!d.results[matchId])d.results[matchId]={};d.results[matchId][field]=parseInt(value)||0;}
+        else{if(!d.playoffResults[matchId])d.playoffResults[matchId]={};d.playoffResults[matchId][field]=parseInt(value)||0;}
+        this.save(d);
+        if(type==='match')this.renderMatches();
+        else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+        this.renderRanking();
+    }
+
+    unlockAll(target){
+        if(!currentUser.isAdmin)return;
+        const msgs={matches:'Déverrouiller TOUS les pronostics (groupes) ?',playoffs:'Déverrouiller TOUS les pronostics (playoffs) ?',results:'⚠️ Effacer TOUS les résultats officiels ?'};
+        if(!confirm(msgs[target]))return;
+        const d=this.d();
+        if(target==='matches'){Object.keys(d.bets).forEach(pn=>Object.keys(d.bets[pn]).forEach(mid=>{d.bets[pn][mid].locked=false;}));this.save(d);this.renderMatches();this.toast('🔓 Tous déverrouillés !');}
+        else if(target==='playoffs'){Object.keys(d.playoffBets).forEach(pn=>Object.keys(d.playoffBets[pn]).forEach(pid=>{d.playoffBets[pn][pid].locked=false;}));this.save(d);this.renderPlayoffs(document.getElementById('phaseFilter').value);this.toast('🔓 Tous déverrouillés !');}
+        else if(target==='results'){d.results={};d.playoffResults={};this.save(d);this.renderMatches();this.renderPlayoffs(document.getElementById('phaseFilter').value);this.renderRanking();this.toast('🗑️ Tous les résultats effacés !');}
+    }
+
+    renderPlayoffs(phase='all'){
+        const list=phase==='all'?this.playoffs:this.playoffs.filter(p=>p.phase===phase);
+        document.getElementById('playoffsList').innerHTML=list.map(p=>this.buildPlayoffCard(p)).join('');
+    }
+
+    buildPlayoffCard(playoff){
+        const d=this.d(),res=d.playoffResults[playoff.id]||{};
+        const team1=res.team1||playoff.team1,team2=res.team2||playoff.team2;
+        const hasTeams=team1!=='À déterminer'&&team2!=='À déterminer';
+        const hasResult=res.s1!==undefined&&res.s2!==undefined;
+        const isAdmin=currentUser.isAdmin,me=currentUser.name;
+        let html=`<div class="match-card playoff-card ${hasResult?'is-finished':''}">
+            <div class="match-header">
+                <span class="group-badge playoff-badge">${playoff.phase} · Match ${playoff.match}</span>
+                <span class="match-date">📅 ${playoff.date}</span>
+                <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En attente'}</span>
+            </div>`;
+        if(isAdmin){
+            html+=`<div class="admin-box"><div class="admin-box-title">🔐 Configurer équipes et résultat</div>
+                <div class="playoff-teams-row">
+                    <input type="text" class="team-edit-input" placeholder="Équipe 1" value="${team1!=='À déterminer'?team1:''}" onchange="app.savePlayoffTeam('${playoff.id}','team1',this.value)">
+                    <span class="versus">VS</span>
+                    <input type="text" class="team-edit-input" placeholder="Équipe 2" value="${team2!=='À déterminer'?team2:''}" onchange="app.savePlayoffTeam('${playoff.id}','team2',this.value)">
+                </div>
+                <div class="admin-score-row" style="margin-top:14px">
+                    <span class="admin-team">${flag(team1)} ${team1}</span>
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s1!==undefined?res.s1:''}" placeholder="0" onchange="app.saveResult('${playoff.id}','s1',this.value,'playoff')">
+                    <span class="admin-dash">—</span>
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s2!==undefined?res.s2:''}" placeholder="0" onchange="app.saveResult('${playoff.id}','s2',this.value,'playoff')">
+                    <span class="admin-team">${flag(team2)} ${team2}</span>
+                    ${hasResult?`<button onclick="app.clearResult('${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`:''}
+                </div></div>`;
+        }else{
+            html+=`<div class="match-teams"><div class="team-name">${this.teamDisplay(team1,true)}</div><div class="versus">VS</div><div class="team-name">${this.teamDisplay(team2,true)}</div></div>`;
+        }
+        if(hasResult)html+=`<div class="official-result">🏆 Résultat : <strong>${flag(team1)} ${team1} ${res.s1} — ${res.s2} ${team2} ${flag(team2)}</strong></div>`;
+        if(hasTeams){
+            html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div>`;
+            d.players.forEach(player=>{
+                const bet=d.playoffBets[player.name]?.[playoff.id]||{};
+                const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+                const isLocked=bet.locked===true,isMe=player.name===me&&!isAdmin;
+                const canEdit=isAdmin?true:(isMe&&!isLocked&&!hasResult);
+                let ptsHtml='';
+                if(hasResult&&hasBet){const pts=this.calcPlayoffPoints({s1:bet.s1,s2:bet.s2},{s1:res.s1,s2:res.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
+                html+=`<div class="bet-row ${isMe?'bet-row-me':''}">
+                    <div class="bet-player">${isMe?'<span class="dot-me">●</span>':''}<strong>${player.name}</strong>${isMe?'<span class="tag-me">Vous</span>':''}${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
+                    <div class="bet-score-zone">`;
+                if(canEdit){
+                    const cls=isAdmin?'admin-input':'my-input';
+                    html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="0" onchange="app.saveBet('${player.name}','${playoff.id}','s1',this.value,'playoff')">
+                        <span class="bet-sep">—</span>
+                        <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="0" onchange="app.saveBet('${player.name}','${playoff.id}','s2',this.value,'playoff')">`;
+                    if(!isAdmin&&isMe)html+=`<button onclick="app.lockBet('${player.name}','${playoff.id}','playoff')" class="btn btn-validate">✅ Valider</button>`;
+                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
+                }else{
+                    if(hasBet)html+=`<span class="readonly-score">${bet.s1} — ${bet.s2}</span>`;
+                    else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
+                    if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button>`;
+                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
+                }
+                html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
+            });
+            html+=`</div>`;
+        }else{html+=`<div class="no-teams-msg">⏳ Les équipes seront déterminées prochainement</div>`;}
+        html+=`</div>`;return html;
+    }
+
+    savePlayoffTeam(id,field,value){
+        if(!currentUser.isAdmin)return;
+        const d=this.d();if(!d.playoffResults[id])d.playoffResults[id]={};
+        d.playoffResults[id][field]=value;this.save(d);
+        this.renderPlayoffs(document.getElementById('phaseFilter').value);
+    }
+
+    calcPoints(bet,result){
+        const b1=bet.s1,b2=bet.s2,r1=result.s1,r2=result.s2;
+        if(b1===undefined||r1===undefined)return 0;
+        if(b1===r1&&b2===r2)return 5;
+        const bDiff=b1-b2,rDiff=r1-r2;
+        const bRes=bDiff>0?'W':bDiff<0?'L':'D',rRes=rDiff>0?'W':rDiff<0?'L':'D';
+        if(bRes===rRes&&Math.abs(bDiff)===Math.abs(rDiff))return 3;
+        if(bRes===rRes)return 1;
+        return 0;
+    }
+
+    calcPlayoffPoints(bet,result){
+        const b1=bet.s1,b2=bet.s2,r1=result.s1,r2=result.s2;
+        if(b1===undefined||r1===undefined)return 0;
+        if(b1===r1&&b2===r2)return 5;
+        const bWin=b1>b2?'1':b1<b2?'2':'D',rWin=r1>r2?'1':r1<r2?'2':'D';
+        if(bWin===rWin)return 3;return 0;
+    }
+
+    renderRanking(){
+        const d=this.d(),ranking=this.calcRanking(d);
+        const nbG=Object.values(d.results).filter(r=>r.s1!==undefined).length;
+        const nbP=Object.values(d.playoffResults).filter(r=>r.s1!==undefined).length;
+        document.getElementById('statsSummary').innerHTML=`
+            <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-label">Groupes joués</div><div class="stat-value">${nbG}<span>/72</span></div></div>
+            <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-label">Playoffs joués</div><div class="stat-value">${nbP}<span>/32</span></div></div>
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Participants</div><div class="stat-value">${d.players.length}</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">Leader</div><div class="stat-value leader">${ranking[0]?.name||'—'}</div></div>`;
+        document.getElementById('rankingTable').innerHTML=`
+        <table class="rank-table">
+            <thead><tr><th>#</th><th>Joueur</th><th>⚽ Groupes</th><th>🏅 Playoffs</th><th>🏆 Total</th><th>Paris</th><th>Moy.</th></tr></thead>
+            <tbody>${ranking.map((p,i)=>`
+            <tr class="${p.name===currentUser.name&&!currentUser.isAdmin?'rank-me':''} ${i<3?'rank-top':''}">
+                <td class="rank-pos">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+                <td><strong>${p.name}</strong>${p.name===currentUser.name&&!currentUser.isAdmin?'<span class="tag-me">Vous</span>':''}</td>
+                <td>${p.gPts}</td><td>${p.pPts}</td><td class="rank-total">${p.total}</td><td>${p.played}</td><td>${p.avg}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+        <div class="ranking-rules"><div class="ranking-rules-title">📖 Règles du jeu</div>
+        <div class="ranking-rules-grid">
+            <div class="ranking-rule-item"><span class="pts-badge pts5">5 pts</span><span>Score exact</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts3">3 pts</span><span>Bon résultat + bon écart</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts1">1 pt</span><span>Bon résultat uniquement</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts0">0 pt</span><span>Mauvais pronostic</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts5">5 pts</span><span>Phases finales : score exact</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts3">3 pts</span><span>Phases finales : bon vainqueur</span></div>
+        </div></div>`;
+    }
+
+    calcRanking(d){
+        return d.players.map(player=>{
+            let gPts=0,pPts=0,played=0;
+            Object.entries(d.results).forEach(([id,r])=>{if(r.s1===undefined)return;const b=d.bets[player.name]?.[id];if(!b||b.s1===undefined)return;gPts+=this.calcPoints(b,r);played++;});
+            Object.entries(d.playoffResults).forEach(([id,r])=>{if(r.s1===undefined)return;const b=d.playoffBets[player.name]?.[id];if(!b||b.s1===undefined)return;pPts+=this.calcPlayoffPoints(b,r);played++;});
+            const total=gPts+pPts;
+            return{name:player.name,gPts,pPts,total,played,avg:played>0?(total/played).toFixed(2):'0.00'};
+        }).sort((a,b)=>b.total-a.total);
+    }
+
+    renderSetup(){
+        const d=this.d();
+        const ai=document.getElementById('newAdminCode');if(ai)ai.value=d.adminCode||'admin2026';
+        document.getElementById('playersSetup').innerHTML=d.players.map((p,i)=>`
+            <div class="player-setup-card">
+                <div class="player-setup-num">${i+1}</div>
+                <div class="player-setup-fields">
+                    <div class="form-group"><label>Nom</label><input type="text" value="${this.escHtml(p.name)}" placeholder="Nom du joueur" onchange="app.updatePlayer(${i},'name',this.value)"></div>
+                    <div class="form-group"><label>Mot de passe</label><input type="text" value="${this.escHtml(p.code||'')}" placeholder="Mot de passe" onchange="app.updatePlayer(${i},'code',this.value)"></div>
+                </div>
+                <button onclick="app.promptDeletePlayer(${i},'${this.escHtml(p.name)}')" class="btn-delete-player">🗑️</button>
+            </div>`).join('')+
+            `<div class="player-add-zone" onclick="app.addPlayer()"><span class="add-player-plus">＋</span><span>Ajouter un joueur</span></div>`;
+    }
+
+    escHtml(str){return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    updatePlayer(i,field,value){const d=this.d();d.players[i][field]=value;saveData(d);}
+
+    addPlayer(){
+        if(!currentUser.isAdmin)return;
+        const name=(prompt('Nom du nouveau joueur ?')||'').trim();
+        if(!name)return;
+        const d=this.d();
+        if(d.players.some(p=>p.name.toLowerCase()===name.toLowerCase())){alert('⚠️ Ce nom existe déjà !');return;}
+        const code=(prompt(`Mot de passe pour ${name} ?`)||'').trim();
+        if(!code){alert('⚠️ Mot de passe requis !');return;}
+        d.players.push({name,code});
+        saveData(d);this.renderSetup();initLogin();this.toast(`✅ ${name} ajouté !`);
+    }
+
+    promptDeletePlayer(index,name){
+        if(!currentUser.isAdmin)return;
+        playerToDelete=index;
+        document.getElementById('deleteModalMsg').textContent=`Supprimer « ${name} » ? Tous ses pronostics seront supprimés.`;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    closeDeleteModal(){playerToDelete=null;document.getElementById('deleteModal').classList.add('hidden');}
+
+    confirmDeletePlayer(){
+        if(playerToDelete===null||!currentUser.isAdmin){this.closeDeleteModal();return;}
+        const d=this.d(),player=d.players[playerToDelete];
+        if(!player){this.closeDeleteModal();return;}
+        const name=player.name;
+        d.players.splice(playerToDelete,1);delete d.bets[name];delete d.playoffBets[name];
+        saveData(d);this.closeDeleteModal();this.renderSetup();initLogin();this.toast(`🗑️ ${name} supprimé !`);
+    }
+
+    savePlayersSetup(){
+        const d=this.d();
+        const names=d.players.map(p=>(p.name||'').trim()).filter(Boolean);
+        if(new Set(names.map(n=>n.toLowerCase())).size!==names.length){alert('⚠️ Deux joueurs ont le même nom !');return;}
+        if(d.players.some(p=>!(p.name||'').trim())){alert('⚠️ Tous les joueurs doivent avoir un nom !');return;}
+        const noPwd=d.players.filter(p=>!(p.code||'').trim()).map(p=>p.name);
+        if(noPwd.length){alert('⚠️ Mot de passe manquant pour : '+noPwd.join(', '));return;}
+        this.save(d);initLogin();alert('✅ Joueurs sauvegardés !');
+    }
+
+    saveAdminCode(){
+        if(!currentUser.isAdmin)return;
+        const newCode=document.getElementById('newAdminCode').value.trim();
+        if(!newCode){alert('⚠️ Le code admin ne peut pas être vide !');return;}
+        if(newCode.length<4){alert('⚠️ Le code doit faire au moins 4 caractères !');return;}
+        if(!confirm(`Changer le code admin pour « ${newCode} » ?`))return;
+        const d=this.d();d.adminCode=newCode;this.save(d);alert('✅ Code admin mis à jour !');
+    }
+
+    exportData(){
+        if(!currentUser.isAdmin)return;
+        const blob=new Blob([JSON.stringify(this.d(),null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob),a=document.createElement('a');
+        a.href=url;a.download=`cdm2026_${new Date().toISOString().split('T')[0]}.json`;a.click();
+    }
+
+    importData(event){
+        if(!currentUser.isAdmin)return;
+        const file=event.target.files[0];if(!file)return;
+        const reader=new FileReader();
+        reader.onload=e=>{
+            try{const loaded=normalizeData(JSON.parse(e.target.result));_cache=loaded;saveData(loaded);alert('✅ Données importées !');location.reload();}
+            catch{alert('❌ Fichier invalide !');}
+        };
+        reader.readAsText(file);
+    }
+
+    toast(msg){
+        let t=document.querySelector('.toast-msg');if(t)t.remove();
+        t=document.createElement('div');t.className='toast-msg';t.textContent=msg;
+        document.body.appendChild(t);
+        setTimeout(()=>t.classList.add('toast-show'),10);
+        setTimeout(()=>{t.classList.remove('toast-show');setTimeout(()=>t.remove(),300);},2500);
+    }
+
+    buildMatches(){
+        this.matches=[
+            {id:1,group:'A',team1:'Mexique',team2:'Afrique du Sud',date:'11 juin',time:'15h',stadium:'Mexico'},
+            {id:2,group:'A',team1:'Corée du Sud',team2:'Tchéquie',date:'11 juin',time:'22h',stadium:'Guadalajara'},
+            {id:3,group:'A',team1:'Tchéquie',team2:'Afrique du Sud',date:'18 juin',time:'12h',stadium:'Atlanta'},
+            {id:4,group:'A',team1:'Mexique',team2:'Corée du Sud',date:'18 juin',time:'21h',stadium:'Guadalajara'},
+            {id:5,group:'A',team1:'Tchéquie',team2:'Mexique',date:'24 juin',time:'21h',stadium:'Mexico'},
+            {id:6,group:'A',team1:'Afrique du Sud',team2:'Corée du Sud',date:'24 juin',time:'21h',stadium:'Monterrey'},
+            {id:7,group:'B',team1:'Canada',team2:'Bosnie-Herzégovine',date:'12 juin',time:'15h',stadium:'Toronto'},
+            {id:8,group:'B',team1:'Qatar',team2:'Suisse',date:'13 juin',time:'15h',stadium:'San Francisco'},
+            {id:9,group:'B',team1:'Suisse',team2:'Bosnie-Herzégovine',date:'18 juin',time:'15h',stadium:'Los Angeles'},
+            {id:10,group:'B',team1:'Canada',team2:'Qatar',date:'18 juin',time:'18h',stadium:'Vancouver'},
+            {id:11,group:'B',team1:'Suisse',team2:'Canada',date:'24 juin',time:'15h',stadium:'Vancouver'},
+            {id:12,group:'B',team1:'Bosnie-Herzégovine',team2:'Qatar',date:'24 juin',time:'15h',stadium:'Seattle'},
+            {id:13,group:'C',team1:'Brésil',team2:'Maroc',date:'13 juin',time:'18h',stadium:'New York / New Jersey'},
+            {id:14,group:'C',team1:'Haïti',team2:'Écosse',date:'13 juin',time:'21h',stadium:'Boston'},
+            {id:15,group:'C',team1:'Écosse',team2:'Maroc',date:'19 juin',time:'18h',stadium:'Boston'},
+            {id:16,group:'C',team1:'Brésil',team2:'Haïti',date:'19 juin',time:'20h30',stadium:'Philadelphie'},
+            {id:17,group:'C',team1:'Écosse',team2:'Brésil',date:'24 juin',time:'18h',stadium:'Miami'},
+            {id:18,group:'C',team1:'Maroc',team2:'Haïti',date:'24 juin',time:'18h',stadium:'Atlanta'},
+            {id:19,group:'D',team1:'États-Unis',team2:'Paraguay',date:'12 juin',time:'21h',stadium:'Los Angeles'},
+            {id:20,group:'D',team1:'Australie',team2:'Turquie',date:'13 juin',time:'00h',stadium:'Vancouver'},
+            {id:21,group:'D',team1:'États-Unis',team2:'Australie',date:'19 juin',time:'15h',stadium:'Seattle'},
+            {id:22,group:'D',team1:'Turquie',team2:'Paraguay',date:'19 juin',time:'23h',stadium:'San Francisco'},
+            {id:23,group:'D',team1:'Turquie',team2:'États-Unis',date:'25 juin',time:'22h',stadium:'Los Angeles'},
+            {id:24,group:'D',team1:'Paraguay',team2:'Australie',date:'25 juin',time:'22h',stadium:'San Francisco'},
+            {id:25,group:'E',team1:'Allemagne',team2:'Curaçao',date:'14 juin',time:'13h',stadium:'Houston'},
+            {id:26,group:'E',team1:"Côte d'Ivoire",team2:'Équateur',date:'14 juin',time:'19h',stadium:'Philadelphie'},
+            {id:27,group:'E',team1:'Allemagne',team2:"Côte d'Ivoire",date:'20 juin',time:'16h',stadium:'Toronto'},
+            {id:28,group:'E',team1:'Équateur',team2:'Curaçao',date:'20 juin',time:'20h',stadium:'Kansas City'},
+            {id:29,group:'E',team1:'Équateur',team2:'Allemagne',date:'25 juin',time:'16h',stadium:'New York / New Jersey'},
+            {id:30,group:'E',team1:'Curaçao',team2:"Côte d'Ivoire",date:'25 juin',time:'16h',stadium:'Philadelphie'},
+            {id:31,group:'F',team1:'Pays-Bas',team2:'Japon',date:'14 juin',time:'16h',stadium:'Dallas'},
+            {id:32,group:'F',team1:'Suède',team2:'Tunisie',date:'14 juin',time:'22h',stadium:'Monterrey'},
+            {id:33,group:'F',team1:'Pays-Bas',team2:'Suède',date:'20 juin',time:'13h',stadium:'Houston'},
+            {id:34,group:'F',team1:'Tunisie',team2:'Japon',date:'20 juin',time:'00h',stadium:'Monterrey'},
+            {id:35,group:'F',team1:'Tunisie',team2:'Pays-Bas',date:'25 juin',time:'19h',stadium:'Kansas City'},
+            {id:36,group:'F',team1:'Japon',team2:'Suède',date:'25 juin',time:'19h',stadium:'Dallas'},
+            {id:37,group:'G',team1:'Belgique',team2:'Égypte',date:'15 juin',time:'15h',stadium:'Seattle'},
+            {id:38,group:'G',team1:'Iran',team2:'Nouvelle-Zélande',date:'15 juin',time:'21h',stadium:'Los Angeles'},
+            {id:39,group:'G',team1:'Belgique',team2:'Iran',date:'21 juin',time:'15h',stadium:'Los Angeles'},
+            {id:40,group:'G',team1:'Nouvelle-Zélande',team2:'Égypte',date:'21 juin',time:'21h',stadium:'Vancouver'},
+            {id:41,group:'G',team1:'Nouvelle-Zélande',team2:'Belgique',date:'26 juin',time:'23h',stadium:'Vancouver'},
+            {id:42,group:'G',team1:'Égypte',team2:'Iran',date:'26 juin',time:'23h',stadium:'Seattle'},
+            {id:43,group:'H',team1:'Espagne',team2:'Cap-Vert',date:'15 juin',time:'12h',stadium:'Atlanta'},
+            {id:44,group:'H',team1:'Arabie saoudite',team2:'Uruguay',date:'15 juin',time:'18h',stadium:'Miami'},
+            {id:45,group:'H',team1:'Espagne',team2:'Arabie saoudite',date:'21 juin',time:'12h',stadium:'Atlanta'},
+            {id:46,group:'H',team1:'Uruguay',team2:'Cap-Vert',date:'21 juin',time:'18h',stadium:'Miami'},
+            {id:47,group:'H',team1:'Uruguay',team2:'Espagne',date:'26 juin',time:'20h',stadium:'Guadalajara'},
+            {id:48,group:'H',team1:'Cap-Vert',team2:'Arabie saoudite',date:'26 juin',time:'20h',stadium:'Houston'},
+            {id:49,group:'I',team1:'France',team2:'Sénégal',date:'16 juin',time:'15h',stadium:'New York / New Jersey'},
+            {id:50,group:'I',team1:'Irak',team2:'Norvège',date:'16 juin',time:'18h',stadium:'Boston'},
+            {id:51,group:'I',team1:'France',team2:'Irak',date:'22 juin',time:'17h',stadium:'Philadelphie'},
+            {id:52,group:'I',team1:'Norvège',team2:'Sénégal',date:'22 juin',time:'20h',stadium:'New York / New Jersey'},
+            {id:53,group:'I',team1:'Norvège',team2:'France',date:'26 juin',time:'15h',stadium:'Boston'},
+            {id:54,group:'I',team1:'Sénégal',team2:'Irak',date:'26 juin',time:'15h',stadium:'Toronto'},
+            {id:55,group:'J',team1:'Argentine',team2:'Algérie',date:'16 juin',time:'21h',stadium:'Kansas City'},
+            {id:56,group:'J',team1:'Autriche',team2:'Jordanie',date:'16 juin',time:'00h',stadium:'San Francisco'},
+            {id:57,group:'J',team1:'Argentine',team2:'Autriche',date:'22 juin',time:'13h',stadium:'Dallas'},
+            {id:58,group:'J',team1:'Jordanie',team2:'Algérie',date:'22 juin',time:'23h',stadium:'San Francisco'},
+            {id:59,group:'J',team1:'Jordanie',team2:'Argentine',date:'27 juin',time:'22h',stadium:'Dallas'},
+            {id:60,group:'J',team1:'Algérie',team2:'Autriche',date:'27 juin',time:'22h',stadium:'Kansas City'},
+            {id:61,group:'K',team1:'Portugal',team2:'RD Congo',date:'17 juin',time:'13h',stadium:'Houston'},
+            {id:62,group:'K',team1:'Ouzbékistan',team2:'Colombie',date:'17 juin',time:'22h',stadium:'Mexico'},
+            {id:63,group:'K',team1:'Portugal',team2:'Ouzbékistan',date:'23 juin',time:'13h',stadium:'Houston'},
+            {id:64,group:'K',team1:'Colombie',team2:'RD Congo',date:'23 juin',time:'22h',stadium:'Guadalajara'},
+            {id:65,group:'K',team1:'Colombie',team2:'Portugal',date:'27 juin',time:'19h30',stadium:'Miami'},
+            {id:66,group:'K',team1:'RD Congo',team2:'Ouzbékistan',date:'27 juin',time:'19h30',stadium:'Atlanta'},
+            {id:67,group:'L',team1:'Angleterre',team2:'Croatie',date:'17 juin',time:'16h',stadium:'Dallas'},
+            {id:68,group:'L',team1:'Ghana',team2:'Panama',date:'17 juin',time:'19h',stadium:'Toronto'},
+            {id:69,group:'L',team1:'Angleterre',team2:'Ghana',date:'23 juin',time:'16h',stadium:'Boston'},
+            {id:70,group:'L',team1:'Panama',team2:'Croatie',date:'23 juin',time:'19h',stadium:'Toronto'},
+            {id:71,group:'L',team1:'Panama',team2:'Angleterre',date:'27 juin',time:'17h',stadium:'New York / New Jersey'},
+            {id:72,group:'L',team1:'Croatie',team2:'Ghana',date:'27 juin',time:'17h',stadium:'Philadelphie'}
+        ];
+    }
+
+    buildPlayoffs(){
+        this.playoffs=[];
+        const r16=[{i:1,date:'29 juin'},{i:2,date:'29 juin'},{i:3,date:'30 juin'},{i:4,date:'30 juin'},
+            {i:5,date:'1 juil.'},{i:6,date:'1 juil.'},{i:7,date:'2 juil.'},{i:8,date:'2 juil.'},
+            {i:9,date:'3 juil.'},{i:10,date:'3 juil.'},{i:11,date:'4 juil.'},{i:12,date:'4 juil.'},
+            {i:13,date:'5 juil.'},{i:14,date:'5 juil.'},{i:15,date:'6 juil.'},{i:16,date:'6 juil.'}];
+        r16.forEach(({i,date})=>this.playoffs.push({id:`R16_${i}`,phase:'16es de finale',match:i,team1:'À déterminer',team2:'À déterminer',date}));
+        const r8=[{i:1,date:'9 juil.'},{i:2,date:'9 juil.'},{i:3,date:'10 juil.'},{i:4,date:'10 juil.'},
+            {i:5,date:'11 juil.'},{i:6,date:'11 juil.'},{i:7,date:'12 juil.'},{i:8,date:'12 juil.'}];
+        r8.forEach(({i,date})=>this.playoffs.push({id:`R8_${i}`,phase:'8es de finale',match:i,team1:'À déterminer',team2:'À déterminer',date}));
+        [{i:1,date:'15 juil.'},{i:2,date:'15 juil.'},{i:3,date:'16 juil.'},{i:4,date:'16 juil.'}]
+            .forEach(({i,date})=>this.playoffs.push({id:`QF_${i}`,phase:'Quarts de finale',match:i,team1:'À déterminer',team2:'À déterminer',date}));
+        this.playoffs.push({id:'SF_1',phase:'Demi-finales',match:1,team1:'À déterminer',team2:'À déterminer',date:'21 juil.'});
+        this.playoffs.push({id:'SF_2',phase:'Demi-finales',match:2,team1:'À déterminer',team2:'À déterminer',date:'22 juil.'});
+        this.playoffs.push({id:'THIRD',phase:'Match 3e place',match:1,team1:'À déterminer',team2:'À déterminer',date:'25 juil.'});
+        this.playoffs.push({id:'FINAL',phase:'FINALE',match:1,team1:'À déterminer',team2:'À déterminer',date:'26 juil.'});
+    }
+}
+
+const app=new App();
+(async()=>{const d=await loadDataAsync();_cache=d;localStorage.setItem('cdm2026',JSON.stringify(d));initLogin();})();
+</script>
+</body>
+</html>
