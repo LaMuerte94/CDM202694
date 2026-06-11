@@ -116,6 +116,16 @@
           <button onclick="app.saveAdminCode()" class="btn btn-primary">💾 Changer le code admin</button>
         </div>
       </div>
+      <div class="setup-section player-only hidden" id="myAccountSection">
+        <h2>👤 Mon compte</h2>
+        <p class="info">Changez votre mot de passe personnel</p>
+        <div class="admin-code-row">
+          <input type="password" id="currentPassword" placeholder="Mot de passe actuel" class="admin-code-input">
+          <input type="password" id="newPassword" placeholder="Nouveau mot de passe" class="admin-code-input">
+          <button onclick="app.changeOwnPassword()" class="btn btn-primary">💾 Changer mon mot de passe</button>
+        </div>
+        <div id="passwordStatus" class="info" style="margin-top:8px;"></div>
+      </div>
       <div class="setup-section">
         <h2>🌍 Synchronisation officielle FIFA</h2>
         <p class="info">Récupère automatiquement les scores des matchs terminés depuis l'API FIFA / api-football.com</p>
@@ -476,9 +486,11 @@ function startApp(){
     if(currentUser.isAdmin){
         badge.innerHTML='<span class="badge-admin">👑 Administrateur</span>';
         document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
+        document.querySelectorAll('.player-only').forEach(el=>el.classList.add('hidden'));
     }else{
         badge.innerHTML=`<span class="badge-player">👤 ${currentUser.name}</span>`;
         document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));
+        document.querySelectorAll('.player-only').forEach(el=>el.classList.remove('hidden'));
     }
     const info=document.getElementById('matchInfo');
     if(currentUser.isAdmin)info.innerHTML='<span class="info-admin">👑 Admin — vous pouvez tout modifier</span>';
@@ -988,6 +1000,31 @@ class App{
         if(newCode.length<4){alert('⚠️ Le code doit faire au moins 4 caractères !');return;}
         if(!confirm(`Changer le code admin pour « ${newCode} » ?`))return;
         const d=this.d();d.adminCode=newCode;this.save(d);alert('✅ Code admin mis à jour !');
+    }
+
+    changeOwnPassword(){
+        if(currentUser.isAdmin){alert('⚠️ L\'admin utilise le code admin, pas cette section.');return;}
+        const current=document.getElementById('currentPassword').value.trim();
+        const newPw=document.getElementById('newPassword').value.trim();
+        const status=document.getElementById('passwordStatus');
+        const setStatus=(msg,color)=>{if(status){status.textContent=msg;status.style.color=color||'#6c757d';}};
+        if(!current||!newPw){setStatus('⚠️ Remplissez les deux champs !','#dc3545');return;}
+        if(newPw.length<4){setStatus('⚠️ Le mot de passe doit faire au moins 4 caractères !','#dc3545');return;}
+        const d=this.d();
+        const player=d.players.find(p=>p.name===currentUser.name);
+        if(!player){setStatus('❌ Joueur introuvable !','#dc3545');return;}
+        if(player.code!==current){setStatus('❌ Mot de passe actuel incorrect !','#dc3545');return;}
+        if(!confirm(`Changer votre mot de passe pour « ${newPw} » ?`))return;
+        player.code=newPw;
+        this.save(d);
+        setStatus('✅ Mot de passe mis à jour !','#28a745');
+        document.getElementById('currentPassword').value='';
+        document.getElementById('newPassword').value='';
+        // Met à jour la session localStorage
+        const session=JSON.parse(localStorage.getItem('cdm2026_session')||'{}');
+        session.code=newPw;
+        localStorage.setItem('cdm2026_session',JSON.stringify(session));
+        this.toast('🔐 Mot de passe changé !');
     }
 
     exportData(){
