@@ -744,6 +744,10 @@ class App{
     buildMatchCard(match){
         const d=this.d(),result=d.results[match.id]||{};
         const hasResult=result.s1!==undefined&&result.s2!==undefined;
+        const msBefore=msBeforeMatch(match.date, match.time);
+        const isFinished=hasResult;
+        const isLive=msBefore!==null && msBefore < 0 && !hasResult;
+        const isUpcoming=msBefore!==null && msBefore >= 0;
         const isAdmin=currentUser.isAdmin,me=currentUser.name;
         let html=`<div class="match-card ${hasResult?'is-finished':''}">
             <div class="match-header">
@@ -751,7 +755,7 @@ class App{
                 <span class="match-date">📅 ${match.date}</span>
                 ${match.time?`<span class="match-date">🕐 ${match.time}</span>`:''}
                 ${match.stadium?`<span class="match-stadium">📍 ${match.stadium}</span>`:''}
-                <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En cours'}</span>
+                <span class="${isFinished?'badge-finished':isLive?'badge-live':'badge-upcoming'}" style="margin-left:auto">${isFinished?'✅ Terminé':isLive?'🔴 En cours':'⏳ À venir'}</span>
             </div>
             <div class="match-teams">
                 <div class="team-name">${this.teamDisplay(match.team1,true)}</div>
