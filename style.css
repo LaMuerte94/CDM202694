@@ -121,6 +121,10 @@ header h1 { font-size:24px; }
 .no-bet { font-size:14px; color:#6c757d; font-style:italic; padding:8px 16px; background:#f8f9fa; border-radius:8px; }
 .bet-pts { margin-left:auto; padding:4px 8px; }
 
+.bet-row-grid { flex-direction:column; align-items:stretch; }
+.bet-score-zone { order:2; }
+.bet-pts { order:3; margin:8px auto 0; }
+
 /* Inputs score */
 .score-input { width:58px; padding:8px; text-align:center; border:2px solid #dee2e6; border-radius:8px; font-size:18px; font-weight:700; transition:all 0.3s; background:white; }
 .my-input { border-color:#2196f3 !important; }
