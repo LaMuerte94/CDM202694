@@ -223,7 +223,15 @@ header h1 { font-size:24px; }
 .modal-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
 @media (max-width:480px) {
   .modal-overlay { align-items:flex-start; padding:10px; overflow-y:auto; }
-  .modal-box { margin:20px auto; padding:30px 20px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .modal-box { margin:20px auto; padding:20px 15px; max-height:calc(100vh - 40px); overflow-y:auto; }
+  .modal-icon { font-size:36px; margin-bottom:8px; }
+  .modal-box h3 { font-size:18px; margin-bottom:8px; }
+  .modal-box p { font-size:12px; margin-bottom:16px; }
+  .modal-box .form-group { margin-bottom:12px; }
+  .modal-box .form-group label { font-size:12px; margin-bottom:4px; }
+  .modal-box .form-group input { padding:8px 10px; font-size:14px; }
+  .modal-actions { gap:8px; }
+  .modal-actions button { padding:8px 16px; font-size:13px; }
 }
 
 /* Toast */
