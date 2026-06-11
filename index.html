@@ -751,10 +751,6 @@ class App{
                 <span class="match-date">📅 ${match.date}</span>
                 ${match.time?`<span class="match-date">🕐 ${match.time}</span>`:''}
                 ${match.stadium?`<span class="match-stadium">📍 ${match.stadium}</span>`:''}
-                ${!hasResult && match.date && match.time ? 
-                    `<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal">
-                        <span class="cd-value">⏱️ --:--</span>
-                    </div>` : ''}
                 <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En cours'}</span>
             </div>
             <div class="match-teams">
@@ -762,6 +758,11 @@ class App{
                 <div class="versus">VS</div>
                 <div class="team-name">${this.teamDisplay(match.team2,true)}</div>
             </div>`;
+        if(!hasResult && match.date && match.time) {
+            html+=`<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal">
+                <span class="cd-value">⏱️ FIN DES PRONOSTICS POUR CE MATCH DANS --:--</span>
+            </div>`;
+        }
         if(hasResult)html+=`<div class="official-result">⚽ Résultat officiel : <strong>${flag(match.team1)} ${match.team1} ${result.s1} — ${result.s2} ${match.team2} ${flag(match.team2)}</strong></div>`;
         if(isAdmin)html+=`<div class="admin-box"><div class="admin-box-title">🔐 Résultat officiel ${hasResult?`<button onclick="app.clearResult(${match.id},'match')" class="btn-icon-red">🗑️</button>`:''}</div>
             <div class="admin-score-row">
