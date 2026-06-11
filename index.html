@@ -751,6 +751,10 @@ class App{
                 <span class="match-date">📅 ${match.date}</span>
                 ${match.time?`<span class="match-date">🕐 ${match.time}</span>`:''}
                 ${match.stadium?`<span class="match-stadium">📍 ${match.stadium}</span>`:''}
+                ${!hasResult && match.date && match.time ? 
+                    `<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal">
+                        <span class="cd-value">⏱️ --:--</span>
+                    </div>` : ''}
                 <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En cours'}</span>
             </div>
             <div class="match-teams">
@@ -812,7 +816,7 @@ class App{
                 const canEdit=isAdmin?true:false;
                 let ptsHtml='';
                 if(hasResult&&hasBet){const pts=this.calcPoints({s1:bet.s1,s2:bet.s2},{s1:result.s1,s2:result.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
-                html+=`<div class="bet-row bet-row-grid">
+                html+=`<div class="bet-row bet-row-grid ${!hasBet?'no-bet-card':''}">
                     <div class="bet-player"><strong>${player.name}</strong>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
                     <div class="bet-score-zone">`;
                 if(canEdit){
@@ -1048,7 +1052,7 @@ class App{
                     const canEdit=isAdmin?true:false;
                     let ptsHtml='';
                     if(hasResult&&hasBet){const pts=this.calcPlayoffPoints({s1:bet.s1,s2:bet.s2},{s1:res.s1,s2:res.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
-                    html+=`<div class="bet-row bet-row-grid">
+                    html+=`<div class="bet-row bet-row-grid ${!hasBet?'no-bet-card':''}">
                         <div class="bet-player"><strong>${player.name}</strong>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
                         <div class="bet-score-zone">`;
                     if(canEdit){
