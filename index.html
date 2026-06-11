@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="">
 
 <div id="loginScreen">
   <div class="login-box">
@@ -634,10 +634,12 @@ function startApp(){
         badge.innerHTML='<span class="badge-admin">👑 Administrateur</span>';
         document.querySelectorAll('.admin-only').forEach(el=>el.classList.remove('hidden'));
         document.querySelectorAll('.player-only').forEach(el=>el.classList.add('hidden'));
+        document.body.classList.add('is-admin');
     }else{
         badge.innerHTML=`<span class="badge-player">👤 ${currentUser.name}</span>`;
         document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));
         document.querySelectorAll('.player-only').forEach(el=>el.classList.remove('hidden'));
+        document.body.classList.remove('is-admin');
     }
     const info=document.getElementById('matchInfo');
     if(currentUser.isAdmin)info.innerHTML='<span class="info-admin">👑 Admin — vous pouvez tout modifier</span>';

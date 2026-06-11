@@ -111,6 +111,7 @@ header h1 { font-size:24px; }
 .bets-table { margin-top:18px; border:2px solid #e9ecef; border-radius:12px; overflow:hidden; }
 .bets-header { padding:12px 18px; background:#f8f9fa; border-bottom:2px solid #e9ecef; font-weight:700; color:#495057; font-size:14px; }
 .bets-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:8px; }
+body.is-admin .bets-grid { grid-template-columns:repeat(2,1fr); }
 .bet-row { display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid #f0f0f0; background:white; transition:background 0.2s; flex-wrap:wrap; }
 .bet-row:last-child { border-bottom:none; }
 .bet-row:hover { background:#fafafa; }
