@@ -46,6 +46,7 @@
         <button onclick="app.exportData()" class="btn btn-secondary admin-only hidden">📥 Exporter</button>
         <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary admin-only hidden">📤 Importer</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importData(event)">
+        <button onclick="app.openPasswordModal()" class="btn btn-secondary player-only hidden">🔐 Mot de passe</button>
         <button onclick="logout()" class="btn btn-logout">🚪 Déconnexion</button>
       </div>
     </header>
@@ -166,6 +167,29 @@
     <div class="modal-actions">
       <button onclick="app.confirmDeletePlayer()" class="btn btn-danger">🗑️ Supprimer</button>
       <button onclick="app.closeDeleteModal()" class="btn btn-secondary">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div id="passwordModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <h3>Changer mon mot de passe</h3>
+    <p>Entrez votre mot de passe actuel et le nouveau.</p>
+    <div class="login-form" style="text-align:left">
+      <div class="form-group">
+        <label>Mot de passe actuel</label>
+        <input type="password" id="modalCurrentPassword" placeholder="Mot de passe actuel">
+      </div>
+      <div class="form-group">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="modalNewPassword" placeholder="Nouveau mot de passe">
+      </div>
+    </div>
+    <div id="modalPasswordStatus" class="info" style="margin-top:12px;"></div>
+    <div class="modal-actions">
+      <button onclick="app.confirmPasswordChange()" class="btn btn-primary">💾 Changer</button>
+      <button onclick="app.closePasswordModal()" class="btn btn-secondary">Annuler</button>
     </div>
   </div>
 </div>
@@ -981,6 +1005,42 @@ class App{
         const name=player.name;
         d.players.splice(playerToDelete,1);delete d.bets[name];delete d.playoffBets[name];
         saveData(d);this.closeDeleteModal();this.renderSetup();initLogin();this.toast(`🗑️ ${name} supprimé !`);
+    }
+
+    openPasswordModal(){
+        if(currentUser.isAdmin){alert('⚠️ L\'admin utilise le code admin, pas cette fonction.');return;}
+        document.getElementById('modalCurrentPassword').value='';
+        document.getElementById('modalNewPassword').value='';
+        document.getElementById('modalPasswordStatus').textContent='';
+        document.getElementById('passwordModal').classList.remove('hidden');
+    }
+
+    closePasswordModal(){
+        document.getElementById('passwordModal').classList.add('hidden');
+    }
+
+    confirmPasswordChange(){
+        if(currentUser.isAdmin){this.closePasswordModal();return;}
+        const current=document.getElementById('modalCurrentPassword').value.trim();
+        const newPw=document.getElementById('modalNewPassword').value.trim();
+        const status=document.getElementById('modalPasswordStatus');
+        const setStatus=(msg,color)=>{if(status){status.textContent=msg;status.style.color=color||'#6c757d';}};
+        if(!current||!newPw){setStatus('⚠️ Remplissez les deux champs !','#dc3545');return;}
+        if(newPw.length<4){setStatus('⚠️ Le mot de passe doit faire au moins 4 caractères !','#dc3545');return;}
+        const d=this.d();
+        const player=d.players.find(p=>p.name===currentUser.name);
+        if(!player){setStatus('❌ Joueur introuvable !','#dc3545');return;}
+        if(player.code!==current){setStatus('❌ Mot de passe actuel incorrect !','#dc3545');return;}
+        player.code=newPw;
+        this.save(d);
+        setStatus('✅ Mot de passe mis à jour !','#28a745');
+        setTimeout(()=>this.closePasswordModal(),1000);
+        document.getElementById('modalCurrentPassword').value='';
+        document.getElementById('modalNewPassword').value='';
+        const session=JSON.parse(localStorage.getItem('cdm2026_session')||'{}');
+        session.code=newPw;
+        localStorage.setItem('cdm2026_session',JSON.stringify(session));
+        this.toast('🔐 Mot de passe changé !');
     }
 
     savePlayersSetup(){
