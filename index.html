@@ -452,13 +452,22 @@ async function pollRemote(){
             if(fresh){
                 // Fusionner les données au lieu de remplacer complètement
                 const current=_cache||{};
+                // Fusionner les joueurs en préservant les modifications locales (mots de passe)
+                const mergedPlayers=fresh.players&&fresh.players.length>0?fresh.players.map(fp=>{
+                    const localPlayer=current.players?.find(lp=>lp.name===fp.name);
+                    if(localPlayer){
+                        // Préserver le mot de passe local s'il a été modifié
+                        return {...fp,code:localPlayer.code||fp.code};
+                    }
+                    return fp;
+                }):current.players;
                 const merged={
                     ...fresh,
                     // Préserver les pronostics locaux qui pourraient être plus récents
                     bets:{...fresh.bets,...current.bets},
                     playoffBets:{...fresh.playoffBets,...current.playoffBets},
-                    // Préserver les joueurs locaux pour éviter la perte
-                    players:fresh.players&&fresh.players.length>0?fresh.players:current.players
+                    // Utiliser les joueurs fusionnés
+                    players:mergedPlayers
                 };
                 _cache=normalizeData(merged);
                 localStorage.setItem('cdm2026',JSON.stringify(_cache));
