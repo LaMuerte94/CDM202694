@@ -699,11 +699,11 @@ class App{
         if(type==='match'){
             if(!d.bets[playerName])d.bets[playerName]={};
             if(!d.bets[playerName][matchId])d.bets[playerName][matchId]={};
-            d.bets[playerName][matchId][field]=parseInt(value)||0;
+            d.bets[playerName][matchId][field]=value===''?undefined:parseInt(value);
         }else{
             if(!d.playoffBets[playerName])d.playoffBets[playerName]={};
             if(!d.playoffBets[playerName][matchId])d.playoffBets[playerName][matchId]={};
-            d.playoffBets[playerName][matchId][field]=parseInt(value)||0;
+            d.playoffBets[playerName][matchId][field]=value===''?undefined:parseInt(value);
         }
         this.save(d);
         if(type==='match')this.renderMatches();
@@ -752,8 +752,8 @@ class App{
     saveResult(matchId,field,value,type){
         if(!currentUser.isAdmin)return;
         const d=this.d();
-        if(type==='match'){if(!d.results[matchId])d.results[matchId]={};d.results[matchId][field]=parseInt(value)||0;}
-        else{if(!d.playoffResults[matchId])d.playoffResults[matchId]={};d.playoffResults[matchId][field]=parseInt(value)||0;}
+        if(type==='match'){if(!d.results[matchId])d.results[matchId]={};d.results[matchId][field]=value===''?undefined:parseInt(value);}
+        else{if(!d.playoffResults[matchId])d.playoffResults[matchId]={};d.playoffResults[matchId][field]=value===''?undefined:parseInt(value);}
         this.save(d);
         if(type==='match')this.renderMatches();
         else this.renderPlayoffs(document.getElementById('phaseFilter').value);
