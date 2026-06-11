@@ -266,10 +266,10 @@ header h1 { font-size:24px; }
   .bets-grid { grid-template-columns:repeat(2,1fr); gap:4px; padding:4px; }
   .bet-row-grid { padding:6px 8px; border-radius:8px; }
   .bet-player { padding:4px 6px; gap:4px; }
-  .bet-player strong { font-size:12px; }
+  .bet-player strong { font-size:11px; }
   .bet-score-zone { padding:6px 8px; gap:6px; min-width:120px; }
-  .bet-team-flag { font-size:18px; }
-  .bet-sep { font-size:15px; margin:0 4px; }
-  .readonly-score { font-size:15px; padding:6px 10px; min-width:60px; }
-  .no-bet { font-size:11px; padding:4px 6px; }
+  .bet-team-flag { font-size:16px; }
+  .bet-sep { font-size:13px; margin:0 4px; }
+  .readonly-score { font-size:13px; padding:6px 10px; min-width:60px; }
+  .no-bet { font-size:10px; padding:4px 6px; }
 }
