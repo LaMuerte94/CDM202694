@@ -1223,21 +1223,24 @@ body.is-admin .match-header { padding:8px 14px; gap:8px; }
     font-weight:600;
     border-left: 3px solid var(--blue);
 }
-.rank-gold td { 
-    background:#fffbeb;
-    border-left:3px solid var(--gold); 
+.rank-gold {
+    background: linear-gradient(90deg, #fffbeb 0%, #fef9c3 40%, #fefce8 100%);
+    border-left:3px solid var(--gold);
     font-weight:700;
 }
-.rank-silver td { 
-    background:#f8f9fa;
-    border-left:3px solid #adb5bd; 
+.rank-gold td { background:transparent; }
+.rank-silver {
+    background: linear-gradient(90deg, #f1f3f5 0%, #e9ecef 50%, #f8f9fa 100%);
+    border-left:3px solid #adb5bd;
     font-weight:600;
 }
-.rank-bronze td { 
-    background:#fff8f3;
-    border-left:3px solid #fd7e14; 
+.rank-silver td { background:transparent; }
+.rank-bronze {
+    background: linear-gradient(90deg, #fff4ed 0%, #ffe8d6 40%, #fff8f3 100%);
+    border-left:3px solid #fd7e14;
     font-weight:600;
 }
+.rank-bronze td { background:transparent; }
 .rank-pos { 
     font-size:18px; 
     text-align:center; 

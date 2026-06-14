@@ -1887,21 +1887,6 @@ class App{
             <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Participants</div><div class="stat-value">${d.players.length}</div></div>
             <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">Leader</div><div class="stat-value leader">${ranking[0]?.name||'—'}</div></div>`;
         
-        // Afficher le prochain match avec countdown
-        let nextMatchHtml='';
-        if(nextMatch){
-            nextMatchHtml=`<div class="next-match-card">
-                <div class="next-match-header">⏰ Prochain match</div>
-                <div class="next-match-teams">
-                    <span class="nm-flag">${flag(nextMatch.team1)}</span>
-                    <span class="nm-name">${nextMatch.team1}</span>
-                    <span class="nm-vs">vs</span>
-                    <span class="nm-flag">${flag(nextMatch.team2)}</span>
-                    <span class="nm-name">${nextMatch.team2}</span>
-                </div>
-                <div data-countdown-match="${nextMatch.id}" data-countdown-date="${nextMatch.date}" data-countdown-time="${nextMatch.time}" class="match-countdown countdown-normal"><span class="cd-value">--:--</span></div>
-            </div>`;
-        }
         const isMe=(name)=>name===currentUser.name&&!currentUser.isAdmin;
         // Podium top 3
         const podiumOrder=[ranking[1],ranking[0],ranking[2]]; // 2e, 1er, 3e
@@ -1934,7 +1919,6 @@ class App{
             </tr>`).join('')}</tbody>
         </table>`:'';
         document.getElementById('rankingTable').innerHTML=`
-        ${nextMatchHtml}
         ${podiumHtml}
         ${tableHtml}
         <div class="ranking-rules"><div class="ranking-rules-title">📖 Règles</div>
