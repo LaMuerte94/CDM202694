@@ -5,74 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 Paris Coupe du Monde 2026</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="chat.css">
 <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
 </head>
-<body class="">
+<body class="on-login">
+
+<!-- Canvas pour animations de fond -->
+<canvas id="bgCanvas"></canvas>
+
+<script>
+// Animation JS des balles flottantes pour éviter le freeze CSS
+document.addEventListener('DOMContentLoaded', () => {
+    const balls = document.querySelectorAll('.ball');
+    
+    // Désactiver les animations CSS
+    balls.forEach(ball => {
+        ball.style.animation = 'none';
+        ball.style.opacity = '0';
+    });
+    
+    // Configuration pour chaque balle
+    const ballConfigs = Array.from(balls).map((ball, index) => ({
+        element: ball,
+        duration: 16000 + index * 2000,
+        startTime: Date.now() + Math.random() * 5000,
+        left: parseFloat(ball.style.left) || (5 + index * 15)
+    }));
+    
+    // Boucle d'animation unique
+    function animateAll() {
+        const now = Date.now();
+        
+        ballConfigs.forEach(config => {
+            const elapsed = now - config.startTime;
+            const progress = (elapsed % config.duration) / config.duration;
+            
+            // Calcul de la position Y (de bas en haut)
+            const startY = window.innerHeight + 50;
+            const endY = -50;
+            const y = startY - (startY - endY) * progress;
+            
+            // Rotation
+            const rotation = progress * 720;
+            
+            // Opacité (fade in/out)
+            let opacity = 0;
+            if (progress > 0.05 && progress < 0.95) {
+                opacity = 0.18;
+            }
+            
+            // Scale
+            let scale = 0.5;
+            if (progress > 0.05 && progress < 0.95) {
+                scale = 1;
+            }
+            if (progress > 0.9) {
+                scale = 0.8;
+            }
+            
+            config.element.style.transform = `translateY(${y}px) rotate(${rotation}deg) scale(${scale})`;
+            config.element.style.opacity = opacity;
+        });
+        
+        requestAnimationFrame(animateAll);
+    }
+    
+    animateAll();
+});
+</script>
+
+<!-- Floating Chat Bubble -->
+<div id="chatFloatingBubble">
+  <div id="chatBubbleArrow" class="chat-bubble-arrow" onclick="chat.togglePosition()" title="Déplacer">◀</div>
+  <div id="chatBubbleContent" onclick="chat.openChat()">
+    💬
+    <div class="unread-count hidden" id="unreadCount">0</div>
+  </div>
+</div>
 
 <div id="loginScreen">
+  <div class="login-particles">
+    <div class="ball ball1">⚽</div>
+    <div class="ball ball2">🏆</div>
+    <div class="ball ball3">⚽</div>
+    <div class="ball ball4">🏆</div>
+    <div class="ball ball5">⚽</div>
+    <div class="ball ball6">🏆</div>
+  </div>
   <div class="login-box">
-    <div class="login-logo">🏆</div>
-    <h1>Coupe du Monde 2026</h1>
-    <h2>Grille de Paris</h2>
-    <p>Connectez-vous pour accéder à vos pronostics</p>
+    <div class="login-header-deco"></div>
+    <div class="login-trophy-wrap">
+      <div class="trophy-glow"></div>
+      <div class="trophy-rings">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+      </div>
+      <div class="login-trophy">🏆</div>
+    </div>
+    <div class="login-title-block">
+      <h1>Coupe du Monde</h1>
+      <div class="login-year">
+        <span>2</span><span>0</span><span>2</span><span>6</span>
+      </div>
+      <div class="login-sub">GRILLE DE PARIS</div>
+    </div>
     <div class="login-form">
       <div class="form-group">
-        <label>👤 Votre nom</label>
-        <select id="loginName" onchange="onLoginNameChange()"><option value="">-- Choisissez votre nom --</option></select>
+        <label><span class="label-icon">👤</span> Votre nom</label>
+        <div class="select-wrapper">
+          <select id="loginName" onchange="onLoginNameChange()"><option value="">-- Choisissez votre nom --</option></select>
+          <span class="select-arrow">▼</span>
+        </div>
       </div>
       <div class="form-group hidden" id="adminCodeGroup">
-        <label id="loginCodeLabel">🔑 Mot de passe</label>
-        <input type="password" id="loginCode" placeholder="Mot de passe" onkeypress="if(event.key==='Enter')login()">
+        <label id="loginCodeLabel"><span class="label-icon">🔑</span> Mot de passe</label>
+        <div class="input-wrapper">
+          <input type="password" id="loginCode" placeholder="Mot de passe" onkeypress="if(event.key==='Enter')login()">
+          <span class="input-icon">🔒</span>
+        </div>
       </div>
-      <button onclick="login()" class="btn btn-login">🚀 Se connecter</button>
+      <button onclick="login()" class="btn-login">
+        <div class="btn-shine"></div>
+        <div class="btn-login-inner">
+          <span class="btn-login-icon">🚀</span>
+          Se connecter
+        </div>
+      </button>
       <div id="loginError" class="login-error hidden">❌ Erreur de connexion !</div>
     </div>
-    <div class="login-footer"><p>Pronostics entre amis · Coupe du Monde 2026 🇲🇽🇺🇸🇨🇦</p></div>
+    <div class="login-footer">
+      <p>Pronostics entre amis · Coupe du Monde 2026 🇲🇽🇺🇸🇨🇦</p>
+    </div>
   </div>
 </div>
 
 <div id="mainApp" class="hidden">
   <div class="container">
-    <header>
-      <div class="header-left">
-        <h1>🏆 Coupe du Monde 2026</h1>
-        <div id="userBadge"></div>
-        <div id="saveStatus">
-          <span id="saveStatusIcon">💾</span>
-          <span id="saveStatusText">Sauvegarde…</span>
+    <header id="mainHeader">
+      <div class="header-bg-anim"></div>
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-logo">
+            <span class="header-trophy">🏆</span>
+            <div class="header-titles">
+              <span class="header-title">COUPE DU MONDE 2026</span>
+              <span class="header-subtitle">🇺🇸 🇨🇦 🇲🇽 · Grille de Paris</span>
+            </div>
+          </div>
+          <div id="userBadge"></div>
+          <div id="saveStatus" class="save-status">
+            <span id="saveStatusIcon">☁️</span>
+            <span id="saveStatusText">Sauvegardé</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button onclick="app.exportData()" class="btn-header admin-only hidden" title="Exporter">📥</button>
+          <button onclick="document.getElementById('importFile').click()" class="btn-header admin-only hidden" title="Importer">📤</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importData(event)">
+          <button onclick="app.openPasswordModal()" class="btn-header player-only hidden" title="Mot de passe">🔐</button>
+          <button onclick="logout()" class="btn-logout-main">🚪 Déconnexion</button>
         </div>
       </div>
-      <div class="header-actions">
-        <button onclick="app.exportData()" class="btn btn-secondary admin-only hidden">📥 Exporter</button>
-        <button onclick="document.getElementById('importFile').click()" class="btn btn-secondary admin-only hidden">📤 Importer</button>
-        <input type="file" id="importFile" accept=".json" style="display:none" onchange="app.importData(event)">
-        <button onclick="app.openPasswordModal()" class="btn btn-secondary player-only hidden">🔐 Mot de passe</button>
-        <button onclick="logout()" class="btn btn-logout">🚪 Déconnexion</button>
-      </div>
+      <nav class="main-nav">
+        <button class="nav-tab active" onclick="app.showTab('matches')">
+          <span class="nav-icon">⚽</span>
+          <span class="nav-label">Phase de Groupes</span>
+        </button>
+        <button class="nav-tab" onclick="app.showTab('playoffs')">
+          <span class="nav-icon">🏅</span>
+          <span class="nav-label">Phases finales</span>
+        </button>
+        <button class="nav-tab" onclick="app.showTab('ranking')">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Classement</span>
+        </button>
+        <button class="nav-tab" onclick="app.showTab('dates')">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Dates</span>
+        </button>
+        <button class="nav-tab admin-only hidden" onclick="app.showTab('setup')">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Admin</span>
+        </button>
+      </nav>
     </header>
-    <nav class="tabs">
-      <button class="tab active" onclick="app.showTab('matches')">⚽ Groupes</button>
-      <button class="tab" onclick="app.showTab('playoffs')">🏅 Phases finales</button>
-      <button class="tab" onclick="app.showTab('ranking')">📊 Classement</button>
-      <button class="tab admin-only hidden" onclick="app.showTab('setup')">⚙️ Admin</button>
-    </nav>
 
     <div id="matches" class="tab-content active">
-      <div class="filters">
-        <div style="display:flex;gap:15px;flex-wrap:wrap;align-items:center">
-          <label>📂 Groupe :
-            <select id="groupFilter" onchange="app.filterMatches()">
-              <option value="all">Tous les groupes</option>
-            </select>
-          </label>
-          <label>📅 Tri :
-            <select id="sortFilter" onchange="app.filterMatches()">
-              <option value="group">Par groupe</option>
-              <option value="date">Par journée / date</option>
-            </select>
-          </label>
+      <div id="homepageBannerContainer"></div>
+      <div class="filters-bar">
+        <div class="fbar-left">
+          <div class="toggle-group">
+            <button id="btn-view-date"  class="tgl-btn tgl-active" onclick="app.setView('date')">📅 Date</button>
+            <button id="btn-view-group" class="tgl-btn"            onclick="app.setView('group')">📊 Groupe</button>
+          </div>
         </div>
-        <div id="matchInfo" class="match-info-badge"></div>
       </div>
       <div id="matchesList"></div>
     </div>
@@ -98,6 +225,11 @@
       <h2>📊 Classement général</h2>
       <div id="statsSummary" class="stats-summary"></div>
       <div id="rankingTable"></div>
+    </div>
+
+    <div id="dates" class="tab-content">
+      <h2>📅 Calendrier des Phases Finales</h2>
+      <div id="datesList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;padding:20px"></div>
     </div>
 
     <div id="setup" class="tab-content">
@@ -129,9 +261,10 @@
       </div>
       <div class="setup-section">
         <h2>🌍 Synchronisation officielle FIFA</h2>
-        <p class="info">Récupère automatiquement les scores des matchs terminés depuis l'API FIFA / api-football.com</p>
+        <p class="info">Sync automatique toutes les 20 min pendant les matchs en cours · Sync manuelle disponible à tout moment</p>
+        <div id="autoSyncStatus" class="info" style="margin-top:4px;margin-bottom:10px;font-size:13px;"></div>
         <div class="unlock-buttons">
-          <button onclick="app.syncOfficialResults()" class="btn btn-unlock">🔄 Synchroniser les résultats officiels</button>
+          <button onclick="app.syncOfficialResults()" class="btn btn-unlock">🔄 Synchroniser maintenant</button>
           <div id="syncStatus" class="info" style="margin-top:8px;"></div>
         </div>
       </div>
@@ -147,12 +280,12 @@
       <div class="setup-section">
         <h2>📖 Règles du jeu</h2>
         <div class="rules">
-          <div class="rule-item"><span class="pts-badge pts5">5 pts</span><span>Score exact (2-1 = 2-1)</span></div>
-          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Bon résultat + bon écart (2-1 = 3-2)</span></div>
-          <div class="rule-item"><span class="pts-badge pts1">1 pt</span><span>Bon résultat uniquement (2-1 = 2-0)</span></div>
+          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Phase de groupes — Score exact (2-1 = 2-1)</span></div>
+          <div class="rule-item"><span class="pts-badge pts1">1 pt</span><span>Phase de groupes — Bon vainqueur (2-0 → 1-0)</span></div>
+          <div class="rule-item"><span class="pts-badge pts1">1 pt</span><span>Phase de groupes — Match nul prédit (0-0 → 1-1)</span></div>
           <div class="rule-item"><span class="pts-badge pts0">0 pt</span><span>Mauvais pronostic</span></div>
-          <div class="rule-item"><span class="pts-badge pts5">5 pts</span><span>Phases finales : score exact</span></div>
-          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Phases finales : bon vainqueur</span></div>
+          <div class="rule-item"><span class="pts-badge pts3">3 pts</span><span>Phases finales — à définir</span></div>
+          <div class="rule-item"><span class="pts-badge pts1">1 pt</span><span>Phases finales — à définir</span></div>
         </div>
       </div>
     </div>
@@ -204,12 +337,10 @@ const SUPABASE_TABLE = 'cdm_state';
 const POLL_INTERVAL_MS = 10000;
 
 // ══════════════════════════════════════════════════════════
-// 🌍 API officielle des résultats (TheSportsDB — gratuit, sans inscription)
-// Doc : https://www.thesportsdb.com/league/4429-fifa-world-cup
+// 🌍 API officielle des résultats (ESPN — gratuit, sans inscription)
+// Doc : https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/events
 // ══════════════════════════════════════════════════════════
-const SPORTSDB_KEY    = '3';        // clé publique gratuite
-const SPORTSDB_LEAGUE = 4429;       // FIFA World Cup
-const SPORTSDB_SEASON = 2026;
+const ESPN_API_URL = 'https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/events';
 
 let currentUser    = null;
 let playerToDelete = null;
@@ -218,6 +349,51 @@ let _updatedAt     = null;
 let _saveTimer     = null;
 let _pollTimer     = null;
 let _countdownTimer = null;
+let _autoSyncTimer  = null;
+let _lastAutoSync   = 0;
+
+// ── Durée fenêtre match : coup d'envoi + 150 min (90' + prolongations + pauses) ──
+const MATCH_LIVE_WINDOW_MS = 150 * 60 * 1000;
+const AUTO_SYNC_INTERVAL_MS = 20 * 60 * 1000;
+
+function getMatchesLive(){
+    if(typeof app==='undefined')return[];
+    const now=Date.now();
+    return app.matches.filter(m=>{
+        const dt=parseMatchDateTime(m.date,m.time);
+        if(!dt)return false;
+        const elapsed=now-dt.getTime();
+        return elapsed>0&&elapsed<MATCH_LIVE_WINDOW_MS;
+    });
+}
+
+function updateAutoSyncUI(){
+    const el=document.getElementById('autoSyncStatus');
+    if(!el)return;
+    const live=getMatchesLive();
+    if(!live.length){el.innerHTML='<span style="color:#6c757d">Aucun match en cours — auto-sync en veille</span>';return;}
+    const remaining=Math.max(0,AUTO_SYNC_INTERVAL_MS-(Date.now()-_lastAutoSync));
+    const min=Math.ceil(remaining/60000);
+    const lastStr=_lastAutoSync?new Date(_lastAutoSync).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'—';
+    el.innerHTML=`<span style="color:#28a745">🔴 ${live.length} match(s) en cours — prochaine sync dans <strong>~${min} min</strong> · dernière : ${lastStr}</span>`;
+}
+
+async function autoSyncCheck(){
+    if(!currentUser||typeof app==='undefined')return;
+    const live=getMatchesLive();
+    updateAutoSyncUI();
+    if(!live.length)return;
+    if(Date.now()-_lastAutoSync<AUTO_SYNC_INTERVAL_MS)return;
+    await app.doSync(true);
+}
+
+function startAutoSync(){
+    stopAutoSync();
+    // Vérifier immédiatement au login
+    setTimeout(autoSyncCheck,2000);
+    _autoSyncTimer=setInterval(autoSyncCheck,60*1000);
+}
+function stopAutoSync(){if(_autoSyncTimer){clearInterval(_autoSyncTimer);_autoSyncTimer=null;}}
 
 // ══════════════════════════════════════════════════════════
 // ⏱️  Utilitaires de date pour le timer de décompte
@@ -237,14 +413,14 @@ const DATE_MAP_CDM = {
     '21 juil.':{m:7,d:21},'22 juil.':{m:7,d:22},'23 juil.':{m:7,d:23},'25 juil.':{m:7,d:25},
     '26 juil.':{m:7,d:26}
 };
-// Retourne un Date UTC à partir de la date FR + heure locale Paris (UTC+2)
+// Retourne un Date UTC à partir de la date FR + heure Paris (UTC+2)
 function parseMatchDateTime(dateStr, timeStr){
     const md = DATE_MAP_CDM[dateStr];
     if(!md) return null;
-    const hMatch = String(timeStr||'').match(/(\d{1,2})h/);
+    const hMatch = String(timeStr||'').match(/(\d{1,2})h(\d{2})?/);
     const hour = hMatch ? parseInt(hMatch[1]) : 0;
-    // heure Paris UTC+2 → UTC : on soustrait 2h
-    const utc = Date.UTC(2026, md.m - 1, md.d, hour - 2, 0, 0);
+    const min  = hMatch && hMatch[2] ? parseInt(hMatch[2]) : 0;
+    const utc = Date.UTC(2026, md.m - 1, md.d, hour - 2, min, 0);
     return new Date(utc);
 }
 // Retourne les ms restants avant le coup d'envoi; négatif si passé
@@ -287,14 +463,17 @@ const FLAGS = {
     'Costa Rica':'🇨🇷','Honduras':'🇭🇳','Pologne':'🇵🇱','Serbie':'🇷🇸',
     'À déterminer':'🏳️'
 };
-function flag(t){return FLAGS[t]||'🏳️';}
+function flag(t){
+    if(t==='Algérie') return '<div class="flag-container"><canvas class="flag-confetti" id="alger-confetti"></canvas><video src="alger.mp4" autoplay loop muted playsinline class="flag-video"></video></div>';
+    return FLAGS[t]||'🏳️';
+}
 
 // Mapping FR → EN (noms utilisés par api-football.com)
 const TEAM_FR_TO_EN = {
     'Mexique':'Mexico','Afrique du Sud':'South Africa','Corée du Sud':'Korea Republic','Tchéquie':'Czech Republic',
-    'Canada':'Canada','Bosnie-Herzégovine':'Bosnia and Herzegovina','Qatar':'Qatar','Suisse':'Switzerland',
+    'Canada':'Canada','Bosnie-Herzégovine':'Bosnia-Herzegovina','Qatar':'Qatar','Suisse':'Switzerland',
     'Brésil':'Brazil','Maroc':'Morocco','Écosse':'Scotland','Haïti':'Haiti',
-    'États-Unis':'USA','Turquie':'Turkey','Paraguay':'Paraguay','Australie':'Australia',
+    'États-Unis':'United States','Turquie':'Türkiye','Paraguay':'Paraguay','Australie':'Australia',
     'Allemagne':'Germany','Équateur':'Ecuador',"Côte d'Ivoire":'Ivory Coast','Curaçao':'Curacao',
     'Pays-Bas':'Netherlands','Suède':'Sweden','Tunisie':'Tunisia','Japon':'Japan',
     'Belgique':'Belgium','Iran':'Iran','Nouvelle-Zélande':'New Zealand','Égypte':'Egypt',
@@ -341,7 +520,7 @@ function setSaveStatus(state,text){
     const icon=document.getElementById('saveStatusIcon');
     const txt=document.getElementById('saveStatusText');
     if(!el)return;
-    el.className='visible '+state;
+    el.className='save-status visible '+state;
     txt.textContent=text;
     icon.textContent=state==='saving'?'⏳':state==='saved'?'☁️':'⚠️';
     if(state==='saved'||state==='error'){
@@ -390,18 +569,37 @@ async function supabaseGet(){
 async function supabaseSet(data){
     try{
         setSaveStatus('saving','Sauvegarde…');
-        const body=JSON.stringify({data,updated_at:new Date().toISOString()});
-        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1`;
+        // Merger avec remote avant sauvegarde pour éviter la perte de données (race condition)
+        const remote=await supabaseGet();
+        if(remote){
+            // Joueurs : union des deux listes — jamais perdre un compte
+            if(remote.players&&remote.players.length>0){
+                const localByName={};
+                data.players.forEach(p=>localByName[p.name]=p);
+                remote.players.forEach(rp=>{if(!localByName[rp.name])data.players.push(rp);});
+            }
+            // Bets : remote comme base + local par-dessus (chaque user sauvegarde ses propres paris)
+            data.bets={...remote.bets,...data.bets};
+            data.playoffBets={...remote.playoffBets,...data.playoffBets};
+            // Résultats : local prioritaire (admin a pu modifier), on préserve les locks remote
+            const mergeResults=(rem,loc)=>{const out={...rem};Object.entries(loc).forEach(([k,v])=>{if(rem[k]?.locked&&!loc[k]?.locked)out[k]=rem[k];else out[k]=v;});return out;};
+            data.results=mergeResults(remote.results||{},data.results||{});
+            data.playoffResults=mergeResults(remote.playoffResults||{},data.playoffResults||{});
+        }
+        const body=JSON.stringify({id:1,data,updated_at:new Date().toISOString()});
+        // UPSERT : crée la ligne si elle n'existe pas, met à jour sinon
+        const url=`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`;
         const r=await fetch(url,{
-            method:'PATCH',
-            headers:supabaseHeaders({'Prefer':'return=representation'}),
+            method:'POST',
+            headers:supabaseHeaders({'Prefer':'resolution=merge-duplicates,return=representation'}),
             body
         });
         if(!r.ok){const t=await r.text();throw new Error(t||'HTTP '+r.status);}
         const rows=await r.json();
         if(rows&&rows[0])_updatedAt=rows[0].updated_at;
         setSaveStatus('saved','Sauvegardé ✅');
-        localStorage.setItem('cdm2026',JSON.stringify(data));
+        _cache=normalizeData(data);
+        localStorage.setItem('cdm2026',JSON.stringify(_cache));
         return true;
     }catch(e){
         console.error('Supabase SET error:',e);
@@ -434,7 +632,7 @@ function saveData(data){
     _cache=JSON.parse(JSON.stringify(data));
     localStorage.setItem('cdm2026',JSON.stringify(data));
     clearTimeout(_saveTimer);
-    _saveTimer=setTimeout(()=>supabaseSet(data),800);
+    _saveTimer=setTimeout(async ()=>{await supabaseSet(data);_saveTimer=null;},800);
 }
 
 async function pollRemote(){
@@ -450,26 +648,9 @@ async function pollRemote(){
         if(remoteAt&&remoteAt!==_updatedAt&&!_saveTimer){
             const fresh=await supabaseGet();
             if(fresh){
-                // Fusionner les données au lieu de remplacer complètement
-                const current=_cache||{};
-                // Fusionner les joueurs en préservant les modifications locales (mots de passe)
-                const mergedPlayers=fresh.players&&fresh.players.length>0?fresh.players.map(fp=>{
-                    const localPlayer=current.players?.find(lp=>lp.name===fp.name);
-                    if(localPlayer){
-                        // Préserver le mot de passe local s'il a été modifié
-                        return {...fp,code:localPlayer.code||fp.code};
-                    }
-                    return fp;
-                }):current.players;
-                const merged={
-                    ...fresh,
-                    // Préserver les pronostics locaux qui pourraient être plus récents
-                    bets:{...fresh.bets,...current.bets},
-                    playoffBets:{...fresh.playoffBets,...current.playoffBets},
-                    // Utiliser les joueurs fusionnés
-                    players:mergedPlayers
-                };
-                _cache=normalizeData(merged);
+                // Prendre les données remote directement — nos dernières sauvegardes y sont déjà incluses
+                _cache=normalizeData(fresh);
+                _updatedAt=remoteAt;
                 localStorage.setItem('cdm2026',JSON.stringify(_cache));
                 refreshActiveTab();
             }
@@ -563,21 +744,13 @@ function tryAutoLogin(d){
         const s=JSON.parse(session);
         if(!s.name)return;
         if(s.isAdmin){
-            if(s.code===(d.adminCode||'admin2026')){
-                currentUser={name:'Administrateur',isAdmin:true};
-                startApp();
-                return;
-            }
+            if(s.code===(d.adminCode||'admin2026')){currentUser={name:'Administrateur',isAdmin:true};startApp();return;}
         }else{
             const player=(d.players||[]).find(p=>p.name===s.name);
-            if(player&&player.code===s.code){
-                currentUser={name:player.name,isAdmin:false};
-                startApp();
-                return;
-            }
+            // Accepter si code correspond, ou si le joueur n'a pas de code dans les données (données incomplètes)
+            if(player&&(player.code===s.code||!player.code)){currentUser={name:player.name,isAdmin:false};startApp();return;}
         }
     }catch(e){}
-    // Session invalide, on la nettoie
     localStorage.removeItem('cdm2026_session');
 }
 
@@ -629,6 +802,7 @@ function showLoginError(msg){
 function startApp(){
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
+    document.body.classList.remove('on-login');
     const badge=document.getElementById('userBadge');
     if(currentUser.isAdmin){
         badge.innerHTML='<span class="badge-admin">👑 Administrateur</span>';
@@ -642,16 +816,21 @@ function startApp(){
         document.body.classList.remove('is-admin');
     }
     const info=document.getElementById('matchInfo');
-    if(currentUser.isAdmin)info.innerHTML='<span class="info-admin">👑 Admin — vous pouvez tout modifier</span>';
-    else info.innerHTML=`<span class="info-player">👤 ${currentUser.name} — votre ligne est en bleu · sync live ☁️</span>`;
+    if(info){
+        if(currentUser.isAdmin)info.innerHTML='<span class="info-admin">👑 Admin — vous pouvez tout modifier</span>';
+        else info.innerHTML=`<span class="info-player">👤 ${currentUser.name} — votre ligne est en bleu · sync live ☁️</span>`;
+    }
     app.init();
     startPolling();
     startCountdown();
+    startAutoSync();
 }
 
 function logout(){
     stopPolling();
     stopCountdown();
+    stopAutoSync();
+    document.body.classList.remove('is-admin');
     _prevLockState={};
     currentUser=null;
     localStorage.removeItem('cdm2026_session');
@@ -666,26 +845,172 @@ class App{
     constructor(){this.matches=[];this.playoffs=[];this.buildMatches();this.buildPlayoffs();}
     d(){return loadData();}
     save(data){saveData(data);this.toast('✅ Sauvegardé !');}
-    init(){this.populateFilters();this.showTab('matches');}
+
+    renderUpcomingMatchesBanner(){
+        const container = document.getElementById('homepageBannerContainer');
+        if(!container) return;
+        if(!currentUser) return;
+        
+        const d=this.d();
+        const me=currentUser.name;
+        const now=new Date();
+        const twelveHoursLater=new Date(now.getTime()+24*60*60*1000);
+        
+        // Trouver les matchs de poule dans les 24h
+        const upcomingGroup = this.matches.filter(m => {
+            if(!m.date || !m.time) return false;
+            const matchDate = parseMatchDateTime(m.date, m.time);
+            if(!matchDate) return false;
+            return matchDate > now && matchDate <= twelveHoursLater;
+        }).map(m => {
+            const myBet = d.bets[me]?.[m.id] || {};
+            const hasBet = myBet.s1 !== undefined && myBet.s2 !== undefined;
+            return {
+                ...m,
+                _isPlayoff: false,
+                team1: m.team1,
+                team2: m.team2,
+                _hasBet: hasBet,
+                _bet: myBet
+            };
+        });
+
+        // Trouver les matchs de phase finale dans les 12h
+        const upcomingPlayoffs = this.playoffs.filter(p => {
+            if(!p.date || !p.time) return false;
+            const matchDate = parseMatchDateTime(p.date, p.time);
+            if(!matchDate) return false;
+            const res = d.playoffResults[p.id] || {};
+            return matchDate > now && matchDate <= twelveHoursLater && res.s1 === undefined;
+        }).map(p => {
+            const res = d.playoffResults[p.id] || {};
+            const myBet = d.playoffBets[me]?.[p.id] || {};
+            const hasBet = myBet.s1 !== undefined && myBet.s2 !== undefined;
+            return {
+                ...p,
+                _isPlayoff: true,
+                team1: res.team1 || p.team1,
+                team2: res.team2 || p.team2,
+                _hasBet: hasBet,
+                _bet: myBet
+            };
+        });
+
+        // Fusionner et trier
+        const upcomingSoon = [...upcomingGroup, ...upcomingPlayoffs].sort((a,b)=>{
+            const da = parseMatchDateTime(a.date, a.time);
+            const db = parseMatchDateTime(b.date, b.time);
+            return da - db;
+        });
+
+        if(upcomingSoon.length>0){
+            container.innerHTML = `<div class="upcoming-matches-banner">
+                <div class="upcoming-header">⚡ Matchs à venir (24h)</div>
+                <div class="upcoming-list">
+                    ${upcomingSoon.map(m=> {
+                        const betHtml = m._hasBet ? 
+                            `<span class="up-bet-badge up-bet-ok">✅ Pronostic : ${m._bet.s1}—${m._bet.s2}</span>` : 
+                            `<span class="up-bet-badge up-bet-missing">❌ Pas de prono</span>`;
+                        const groupOrPhase = m._isPlayoff ? m.phase : `Groupe ${m.group}`;
+                        return `
+                            <div class="upcoming-item" onclick="app.goToMatchFromBanner('${m.id}', ${m._isPlayoff})">
+                                <div class="up-top">
+                                    <span class="up-group">${groupOrPhase}</span>
+                                    <div data-countdown-match="${m.id}" data-countdown-date="${m.date}" data-countdown-time="${m.time}" class="match-countdown countdown-normal"><span class="cd-value">--:--</span></div>
+                                </div>
+                                <div class="up-teams-stacked">
+                                    <div class="up-team-row">
+                                        <span class="up-flag">${flag(m.team1)}</span>
+                                        <span class="up-tname">${m.team1}</span>
+                                    </div>
+                                    <div class="up-team-row">
+                                        <span class="up-flag">${flag(m.team2)}</span>
+                                        <span class="up-tname">${m.team2}</span>
+                                    </div>
+                                </div>
+                                <div class="up-bottom">
+                                    ${betHtml}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>`;
+            container.style.display = 'block';
+        } else {
+            container.innerHTML = '';
+            container.style.display = 'none';
+        }
+    }
+
+    goToMatchFromBanner(id, isPlayoff){
+        if(isPlayoff){
+            this.showTab('playoffs');
+            setTimeout(() => {
+                const el = document.getElementById(`playoff-card-${id}`);
+                if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+            }, 100);
+        } else {
+            this.goToMatch(id);
+        }
+    }
+    init(){
+        // Restaurer l'état depuis localStorage
+        const savedTab=localStorage.getItem('cdm2026_tab')||'matches';
+        const savedView=localStorage.getItem('cdm2026_view')||'date';
+        this._view=savedView;
+        document.body.classList.toggle('view-group',savedView==='group');
+        document.body.classList.toggle('view-date',savedView==='date');
+        this.showTab(savedTab);
+    }
+
 
     showTab(tab){
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        localStorage.setItem('cdm2026_tab',tab);
+        document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(btn=>{if((btn.getAttribute('onclick')||'').includes(`'${tab}'`))btn.classList.add('active');});
+        document.querySelectorAll('.nav-tab').forEach(btn=>{if((btn.getAttribute('onclick')||'').includes(`'${tab}'`))btn.classList.add('active');});
         const el=document.getElementById(tab);if(el)el.classList.add('active');
-        if(tab==='matches')this.renderMatches();
-        if(tab==='playoffs')this.renderPlayoffs();
-        if(tab==='ranking')this.renderRanking();
-        if(tab==='setup')this.renderSetup();
+        if(tab==='matches'){
+            const v=this._view||'date';
+            const btnD=document.getElementById('btn-view-date');
+            const btnG=document.getElementById('btn-view-group');
+            if(btnD)btnD.classList.toggle('tgl-active',v==='date');
+            if(btnG)btnG.classList.toggle('tgl-active',v==='group');
+            this.renderMatches();
+            const bubble=document.getElementById('chatFloatingBubble');if(bubble)bubble.classList.remove('hidden');
+        }
+        if(tab==='playoffs'){this.renderPlayoffs();const bubble=document.getElementById('chatFloatingBubble');if(bubble)bubble.classList.remove('hidden');}
+        if(tab==='ranking'){this.renderRanking();const bubble=document.getElementById('chatFloatingBubble');if(bubble)bubble.classList.remove('hidden');}
+        if(tab==='dates'){this.renderDates();const bubble=document.getElementById('chatFloatingBubble');if(bubble)bubble.classList.remove('hidden');}
+        if(tab==='setup'){this.renderSetup();const bubble=document.getElementById('chatFloatingBubble');if(bubble)bubble.classList.remove('hidden');}
     }
 
     populateFilters(){
-        const gf=document.getElementById('groupFilter');
-        const groups=[...new Set(this.matches.map(m=>m.group))];
-        gf.innerHTML='<option value="all">Tous les groupes</option>'+groups.map(g=>`<option value="${g}">Groupe ${g}</option>`).join('');
+        const bar=document.getElementById('groupToggleBar');
+        if(!bar)return;
+        const groups=[...new Set(this.matches.map(m=>m.group))].sort();
+        bar.innerHTML=`<button class="tgl-btn tgl-active" data-g="all" onclick="app.setGroup('all')">Tous</button>`
+            +groups.map(g=>`<button class="tgl-btn" data-g="${g}" onclick="app.setGroup('${g}')">Gr. ${g}</button>`).join('');
     }
 
-    filterMatches(){this.renderMatches();}
+    setView(v){
+        localStorage.setItem('cdm2026_view',v);
+        document.getElementById('btn-view-date').classList.toggle('tgl-active',v==='date');
+        document.getElementById('btn-view-group').classList.toggle('tgl-active',v==='group');
+        this._view=v;
+        document.body.classList.toggle('view-group',v==='group');
+        document.body.classList.toggle('view-date',v==='date');
+        this.renderMatches();
+    }
+
+    setGroup(g){
+        localStorage.setItem('cdm2026_group',g);
+        document.querySelectorAll('#groupToggleBar .tgl-btn').forEach(b=>b.classList.toggle('tgl-active',b.dataset.g===g));
+        this._groupFilter=g;
+        this.renderMatches();
+    }
+
     filterPlayoffs(){this.renderPlayoffs(document.getElementById('phaseFilter').value);}
     teamDisplay(name,big=false){return `<span class="${big?'team-flag-big':'team-flag'}">${flag(name)}</span><span>${name}</span>`;}
 
@@ -735,40 +1060,322 @@ class App{
     }
 
     renderMatches(){
-        const group=document.getElementById('groupFilter').value;
-        const sort=document.getElementById('sortFilter').value;
-        let list=group==='all'?[...this.matches]:this.matches.filter(m=>m.group===group);
-        if(sort==='date'){
-            list.sort((a,b)=>this.dateOrder(a.date)-this.dateOrder(b.date)||a.id-b.id);
-            const byDate={};
-            list.forEach(m=>{(byDate[m.date]=byDate[m.date]||[]).push(m);});
-            const dateKeys=Object.keys(byDate).sort((a,b)=>this.dateOrder(a)-this.dateOrder(b));
-            let html='';
-            dateKeys.forEach(date=>{
-                const dm=byDate[date];
-                html+=`<div class="day-separator"><span class="day-icon">📅</span><span class="day-label">${this.dayName(date)}</span><span class="day-count">${dm.length} match${dm.length>1?'s':''}</span></div>`;
-                html+=dm.map(m=>this.buildMatchCard(m)).join('');
-            });
-            document.getElementById('matchesList').innerHTML=html;
+        const sort=this._view||'date';
+        if(sort==='match-detail'){
+            const banner = document.getElementById('homepageBannerContainer');
+            if(banner) banner.style.display = 'none';
+            const match=this.matches.find(m=>m.id==this._selectedMatchId);
+            if(match)this.renderMatchDetail(match);
         }else{
-            list.sort((a,b)=>a.group<b.group?-1:a.group>b.group?1:a.id-b.id);
-            const byGroup={};
-            list.forEach(m=>{(byGroup[m.group]=byGroup[m.group]||[]).push(m);});
-            const groupKeys=Object.keys(byGroup).sort();
-            let html='';
-            groupKeys.forEach(g=>{
-                const gm=byGroup[g];
-                html+=`<div class="day-separator group-sep"><span class="day-icon">🏆</span><span class="day-label">Groupe ${g}</span><span class="day-count">${gm.length} matchs</span></div>`;
-                html+=gm.map(m=>this.buildMatchCard(m)).join('');
-            });
-            document.getElementById('matchesList').innerHTML=html;
+            this.renderUpcomingMatchesBanner();
+            if(sort==='date')this.renderByDate();
+            else this.renderByGroup(this._groupFilter||'all');
         }
+    }
+
+    _missingBets(matches,d,me,isAdmin){
+        if(isAdmin) return 0;
+        return matches.filter(m=>d.results[m.id]?.s1===undefined&&d.bets[me]?.[m.id]?.s1===undefined).length;
+    }
+
+    _missingTag(missing){
+        if(missing===0) return '';
+        return `<span class="acc-missing">${missing} pronostic${missing>1?'s':''} manquant${missing>1?'s':''}</span>`;
+    }
+
+    renderByGroup(groupFilter){
+        const d=this.d(),me=currentUser.name,isAdmin=currentUser.isAdmin;
+        const allGroups=[...new Set(this.matches.map(m=>m.group))].sort();
+        // Pills de navigation
+        let html='<div class="groups-nav-pills">';
+        allGroups.forEach(g=>{
+            const gm=this.matches.filter(m=>m.group===g);
+            const done=isAdmin
+                ?gm.filter(m=>d.results[m.id]?.s1!==undefined).length
+                :gm.filter(m=>d.bets[me]?.[m.id]?.s1!==undefined).length;
+            const total=gm.length,complete=done===total;
+            const teams=[...new Set(gm.flatMap(m=>[m.team1,m.team2]))].slice(0,4);
+            html+=`<button class="group-pill${complete?' gp-done':''}" onclick="app.openAccordion('grp-${g}')">
+                <span class="gp-letter">Gr.${g}</span>
+                <span class="gp-flags">${teams.map(t=>flag(t)).join('')}</span>
+                <span class="gp-count ${complete?'gp-ok':'gp-warn'}">${done}/${total}</span>
+            </button>`;
+        });
+        html+='</div>';
+        // Sections accordéon
+        const list=(!groupFilter||groupFilter==='all')?[...this.matches]:this.matches.filter(m=>m.group===groupFilter);
+        const byGroup={};
+        list.forEach(m=>{(byGroup[m.group]=byGroup[m.group]||[]).push(m);});
+        const groupKeys=Object.keys(byGroup).sort();
+        // Premier groupe avec pronos manquants, sinon le premier
+        const firstOpen=groupKeys.find(g=>this._missingBets(byGroup[g],d,me,isAdmin)>0)||groupKeys[0];
+        groupKeys.forEach(g=>{
+            const gm=byGroup[g].sort((a,b)=>a.id-b.id);
+            const teams=[...new Set(gm.flatMap(m=>[m.team1,m.team2]))];
+            const missing=this._missingBets(gm,d,me,isAdmin);
+            const open=g===firstOpen;
+            const uid=`grp-${g}`;
+            html+=`<div class="acc-section" id="group-section-${g}">
+                <div class="acc-hdr${open?'':' acc-closed'}" onclick="app.toggleAccordion('${uid}')">
+                    <span class="acc-title">Groupe ${g}</span>
+                    <span class="acc-teams">${teams.map(t=>flag(t)).join(' ')}</span>
+                    ${this._missingTag(missing)}
+                    <span class="acc-chevron" id="chev-${uid}">${open?'▾':'▸'}</span>
+                </div>
+                <div class="acc-body${open?'':' acc-body-closed'}" id="${uid}">
+                    ${gm.map(m=>this.buildMatchCard(m)).join('')}
+                </div>
+            </div>`;
+        });
+        document.getElementById('matchesList').innerHTML=html;
+    }
+
+    scrollToGroup(g){
+        this.openAccordion(`grp-${g}`);
+        setTimeout(()=>{const el=document.getElementById(`group-section-${g}`);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
+    }
+
+    goToMatch(matchId){
+        const match=this.matches.find(m=>m.id==matchId);
+        if(!match)return;
+        this._prevView=this._view||'date';
+        this._prevGroupFilter=this._groupFilter||'all';
+        this._view='match-detail';
+        this._selectedMatchId=matchId;
+        this.renderMatchDetail(match);
+    }
+
+    backFromMatch(){
+        this._view=this._prevView||'date';
+        this._groupFilter=this._prevGroupFilter||'all';
+        this.renderMatches();
+    }
+
+    renderMatchDetail(match){
+        const html=this.buildMatchCard(match);
+        const backBtn=`<a href="index.html" style="display:inline-block;margin-bottom:20px;padding:10px 20px;background:#6c757d;color:white;border:none;border-radius:5px;cursor:pointer;font-size:14px;font-weight:bold;text-decoration:none">← Retour</a>`;
+        document.getElementById('matchesList').innerHTML=backBtn+html;
+        scheduleTwemoji();
+    }
+
+    renderByDate(){
+        const d=this.d(),me=currentUser.name,isAdmin=currentUser.isAdmin;
+        const byDate={};
+        this.matches.forEach(m=>{(byDate[m.date]=byDate[m.date]||[]).push(m);});
+        
+        const todayOrder=this.dateOrder(this._todayDateStr());
+        const dateKeys=Object.keys(byDate).sort((a,b)=>this.dateOrder(a)-this.dateOrder(b));
+        const past=dateKeys.filter(k=>this.dateOrder(k)<todayOrder).reverse();
+        const today=dateKeys.filter(k=>this.dateOrder(k)===todayOrder);
+        const future=dateKeys.filter(k=>this.dateOrder(k)>todayOrder);
+        const ordered=[...today,...future,...past];
+        const firstOpen=today[0]||future.find(k=>this._missingBets(byDate[k],d,me,isAdmin)>0)||future[0]||ordered[0];
+        let html='';
+        ordered.forEach(date=>{
+            const matches=byDate[date].sort((a,b)=>a.id-b.id);
+            const ord=this.dateOrder(date);
+            const isToday=ord===todayOrder;
+            const isPast=ord<todayOrder;
+            const missing=this._missingBets(matches,d,me,isAdmin);
+            const open=date===firstOpen;
+            const uid=`dts-${date.replace(/[\s.]/g,'_')}`;
+            html+=`<div class="acc-section${isToday?' acc-today':''}${isPast?' acc-past':''}">
+                <div class="acc-hdr${open?'':' acc-closed'}" onclick="app.toggleAccordion('${uid}')">
+                    ${isToday?'<span class="today-badge">Aujourd\'hui</span>':isPast?'<span class="past-badge">Terminé</span>':''}
+                    <span class="acc-title">${this.dayName(date)}</span>
+                    <span class="acc-sub">${matches.length} match${matches.length>1?'s':''}</span>
+                    ${this._missingTag(missing)}
+                    <span class="acc-chevron" id="chev-${uid}">${open?'▾':'▸'}</span>
+                </div>
+                <div class="acc-body${open?'':' acc-body-closed'}" id="${uid}">
+                    <div class="goog-grid">${matches.map(m=>this.buildGoogleCard(m)).join('')}</div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('matchesList').innerHTML=html;
+    }
+
+    toggleAccordion(uid){
+        const body=document.getElementById(uid);
+        const chev=document.getElementById('chev-'+uid);
+        if(!body)return;
+        const closing=!body.classList.contains('acc-body-closed');
+        body.classList.toggle('acc-body-closed',closing);
+        if(chev)chev.textContent=closing?'▸':'▾';
+    }
+
+    openAccordion(uid){
+        const body=document.getElementById(uid);
+        const chev=document.getElementById('chev-'+uid);
+        if(!body)return;
+        body.classList.remove('acc-body-closed');
+        if(chev)chev.textContent='▾';
+        document.getElementById(uid.replace(/^grp-/,'group-section-')||uid)?.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    buildGoogleCard(match){
+        const d=this.d(),result=d.results[match.id]||{};
+        const hasResult=result.s1!==undefined&&result.s2!==undefined;
+        const msBefore=msBeforeMatch(match.date,match.time,matchOffset(match.stadium));
+        const isLive=msBefore!==null&&msBefore<0&&msBefore>-MATCH_LIVE_WINDOW_MS&&!hasResult;
+        const isAdmin=currentUser.isAdmin,me=currentUser.name;
+        const myBet=d.bets[me]?.[match.id]||{};
+        const hasBet=myBet.s1!==undefined&&myBet.s2!==undefined;
+        // Badge statut
+        let statusHtml='';
+        if(hasResult) statusHtml=`<span class="gcmc-badge gcmc-done">Terminé</span>`;
+        else if(isLive) statusHtml=`<span class="gcmc-badge gcmc-live">🔴 En cours</span>`;
+        else statusHtml=`<span class="gcmc-time-lbl">${match.time||''}</span>`;
+        
+        // Countdown pour matchs à venir
+        let countdownHtml='';
+        if(!hasResult&&!isLive&&match.date&&match.time){
+            countdownHtml=`<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal"><span class="cd-value">--:--</span></div>`;
+        }
+        // Scores ou tirets
+        const s1=hasResult?result.s1:(isLive?'?':'');
+        const s2=hasResult?result.s2:(isLive?'?':'');
+        const showScore=hasResult||isLive;
+        // Mon pronostic + points
+        let betLine='';
+        if(isAdmin){
+            const nb=d.players.filter(p=>d.bets[p.name]?.[match.id]?.s1!==undefined).length;
+            betLine=`<div class="gcmc-bet-row gcmc-admin-row">
+                <span class="gcmc-bet-lbl">${nb}/${d.players.length} pronos</span>
+                <button class="gcmc-detail-btn" onclick="app.goToMatch(${match.id})">Détail →</button>
+            </div>`;
+        }else if(hasResult){
+            if(hasBet){
+                const pts=this.calcPoints({s1:myBet.s1,s2:myBet.s2},{s1:result.s1,s2:result.s2});
+                betLine=`<div class="gcmc-bet-row">
+                    <span class="gcmc-bet-lbl">Mon prono : <strong>${myBet.s1}—${myBet.s2}</strong></span>
+                    <span class="pts-badge pts${pts}">${pts} pt${pts>1?'s':''}</span>
+                </div>`;
+            }else{
+                betLine=`<div class="gcmc-bet-row gcmc-no-prono"><span class="gcmc-bet-lbl">Pas de pronostic</span></div>`;
+            }
+        }else if(hasBet){
+            betLine=`<div class="gcmc-bet-row">
+                <span class="gcmc-bet-lbl">Mon prono : <strong>${myBet.s1}—${myBet.s2}</strong></span>
+                ${myBet.locked?'<span style="font-size:11px">🔒</span>':''}
+            </div>`;
+        }else{
+            betLine=`<div class="gcmc-bet-row gcmc-no-prono">
+                <span class="gcmc-bet-lbl">Pronostic à saisir</span>
+                <button class="gcmc-detail-btn" onclick="app.goToMatch(${match.id})">Saisir →</button>
+            </div>`;
+        }
+        return `<div class="gcmc${hasResult?' gcmc-finished':isLive?' gcmc-live-card':''}">
+            <div class="gcmc-top">
+                <span class="gcmc-group-lbl">Groupe ${match.group}</span>
+                <div class="gcmc-status-zone">${statusHtml}</div>
+            </div>
+            <div class="gcmc-teams">
+                <div class="gcmc-team-row${hasResult&&result.s1>result.s2?' gcmc-winner':''}">
+                    <span class="gcmc-flag">${flag(match.team1)}</span>
+                    <span class="gcmc-tname">${match.team1}</span>
+                    ${showScore?`<span class="gcmc-score">${s1}</span>`:''}
+                </div>
+                <div class="gcmc-team-row${hasResult&&result.s2>result.s1?' gcmc-winner':''}">
+                    <span class="gcmc-flag">${flag(match.team2)}</span>
+                    <span class="gcmc-tname">${match.team2}</span>
+                    ${showScore?`<span class="gcmc-score">${s2}</span>`:''}
+                </div>
+            </div>
+            ${countdownHtml}
+            ${betLine}
+        </div>`;
+    }
+
+    toggleDateSection(uid){
+        const list=document.getElementById(uid);
+        const chev=document.getElementById('chev-'+uid);
+        if(!list)return;
+        const collapsed=list.classList.toggle('date-matches-collapsed');
+        if(chev)chev.textContent=collapsed?'▸':'▾';
+    }
+
+    _todayDateStr(){
+        const now=new Date();
+        const hour=now.getHours();
+        // Si entre minuit et 6h, considérer qu'on est encore à la date de la veille
+        const adjustedDate=hour>=0&&hour<6?new Date(now.getTime()-24*60*60*1000):now;
+        const d=adjustedDate.getDate();
+        const mo=adjustedDate.getMonth();
+        const months=['janv.','févr.','mars','avril','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+        const shortMo=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+        // match date format: "11 juin" or "1 juil."
+        const mStr=mo===5?'juin':(mo===6?'juil.':shortMo[mo]);
+        return `${d} ${mStr}`;
+    }
+
+    buildCompactMatchCard(match){
+        const d=this.d(),result=d.results[match.id]||{};
+        const hasResult=result.s1!==undefined&&result.s2!==undefined;
+        const msBefore=msBeforeMatch(match.date,match.time);
+        const isLive=msBefore!==null&&msBefore<0&&msBefore>-MATCH_LIVE_WINDOW_MS&&!hasResult;
+        const isAdmin=currentUser.isAdmin,me=currentUser.name;
+        const resultLocked=result.locked===true;
+        const myBet=d.bets[me]?.[match.id]||{};
+        const hasBet=myBet.s1!==undefined&&myBet.s2!==undefined;
+        const myBetLocked=myBet.locked===true;
+        const canEditBet=!isAdmin&&!myBetLocked&&!hasResult;
+        // Zone centrale (score/inputs)
+        let centerHtml='';
+        if(isAdmin){
+            const locked=resultLocked;
+            centerHtml=`<div class="cmc-inputs">
+                <input type="number" min="0" class="score-input admin-input-sm" value="${result.s1!==undefined?result.s1:''}" placeholder="-" ${locked?'disabled':''}
+                    onchange="app.saveResult(${match.id},'s1',this.value,'match')">
+                <span class="cmc-vsep">—</span>
+                <input type="number" min="0" class="score-input admin-input-sm" value="${result.s2!==undefined?result.s2:''}" placeholder="-" ${locked?'disabled':''}
+                    onchange="app.saveResult(${match.id},'s2',this.value,'match')">
+            </div>
+            <div class="cmc-lock-actions">
+                ${hasResult&&!locked?`<button onclick="app.lockResult(${match.id},'match')" class="btn-xs" title="Verrouiller">🔒</button>`:''}
+                ${hasResult&&locked?`<button onclick="app.unlockResult(${match.id},'match')" class="btn-xs" title="Déverrouiller">🔓</button>`:''}
+                ${hasResult&&!locked?`<button onclick="app.clearResult(${match.id},'match')" class="btn-xs-red" title="Effacer">🗑️</button>`:''}
+            </div>`;
+        }else if(hasResult){
+            let ptsHtml='';
+            if(hasBet){const p=this.calcPoints({s1:myBet.s1,s2:myBet.s2},{s1:result.s1,s2:result.s2});ptsHtml=`<span class="cmc-pts pts${p}">${p}p</span>`;}
+            centerHtml=`<div class="cmc-score-result">${result.s1}<span class="cmc-vsep">—</span>${result.s2}${resultLocked?'<span style="font-size:10px;margin-left:2px">🔒</span>':''}</div>
+                ${ptsHtml}
+                ${hasBet?`<div class="cmc-mybet-sub">${myBet.s1}—${myBet.s2}</div>`:''}`;
+        }else if(canEditBet){
+            centerHtml=`<div class="cmc-inputs">
+                <input type="number" min="0" class="score-input my-input-sm" value="${myBet.s1!==undefined?myBet.s1:''}" placeholder="-"
+                    onchange="app.saveBet('${me}',${match.id},'s1',this.value,'match')">
+                <span class="cmc-vsep">—</span>
+                <input type="number" min="0" class="score-input my-input-sm" value="${myBet.s2!==undefined?myBet.s2:''}" placeholder="-"
+                    onchange="app.saveBet('${me}',${match.id},'s2',this.value,'match')">
+            </div>
+            <button onclick="app.lockBet('${me}',${match.id},'match')" class="cmc-validate-btn" title="Valider">✓</button>`;
+        }else if(hasBet){
+            centerHtml=`<div class="cmc-score-bet">${myBet.s1}<span class="cmc-vsep">—</span>${myBet.s2}${myBetLocked?'<span style="font-size:10px;margin-left:2px">🔒</span>':''}</div>`;
+        }else{
+            centerHtml=`<div class="cmc-no-bet">—</div>`;
+        }
+        const statusCls=hasResult?'badge-finished':isLive?'badge-live':'badge-upcoming';
+        const statusTxt=hasResult?'✅':isLive?'🔴':'⏳';
+        return `<div class="cmc${hasResult?' cmc-done':isLive?' cmc-live':''}">
+            <div class="cmc-top">
+                <span class="cmc-time">${match.time||''}</span>
+                <span class="cmc-status ${statusCls}">${statusTxt}</span>
+            </div>
+            <div class="cmc-body">
+                <div class="cmc-t1"><span class="cmc-flag">${flag(match.team1)}</span><span class="cmc-tname">${match.team1}</span></div>
+                <div class="cmc-center">${centerHtml}</div>
+                <div class="cmc-t2"><span class="cmc-tname">${match.team2}</span><span class="cmc-flag">${flag(match.team2)}</span></div>
+            </div>
+            ${isAdmin?`<div class="cmc-footer-admin">${d.players.filter(p=>d.bets[p.name]?.[match.id]?.s1!==undefined).length}/${d.players.length} pronos</div>`:''}
+        </div>`;
     }
 
     buildMatchCard(match){
         const d=this.d(),result=d.results[match.id]||{};
         const hasResult=result.s1!==undefined&&result.s2!==undefined;
-        const msBefore=msBeforeMatch(match.date, match.time);
+        const msBefore=msBeforeMatch(match.date,match.time);
         const isFinished=hasResult;
         const isLive=msBefore!==null && msBefore < 0 && !hasResult;
         const isUpcoming=msBefore!==null && msBefore >= 0;
@@ -781,77 +1388,165 @@ class App{
                 ${match.stadium?`<span class="match-stadium">📍 ${match.stadium}</span>`:''}
                 <span class="${isFinished?'badge-finished':isLive?'badge-live':'badge-upcoming'}" style="margin-left:auto">${isFinished?'✅ Terminé':isLive?'🔴 En cours':'⏳ À venir'}</span>
             </div>
-            <div class="match-teams">
-                <div class="team-name">${this.teamDisplay(match.team1,true)}</div>
-                <div class="versus">VS</div>
-                <div class="team-name">${this.teamDisplay(match.team2,true)}</div>
-            </div>`;
-        if(!hasResult && match.date && match.time) {
-            html+=`<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal">
-                <span class="cd-value">⏱️ FIN DES PRONOSTICS POUR CE MATCH DANS --:--</span>
-            </div>`;
-        }
-        if(hasResult)html+=`<div class="official-result">⚽ Résultat officiel : <strong>${flag(match.team1)} ${match.team1} ${result.s1} — ${result.s2} ${match.team2} ${flag(match.team2)}</strong></div>`;
-        if(isAdmin)html+=`<div class="admin-box"><div class="admin-box-title">🔐 Résultat officiel ${hasResult?`<button onclick="app.clearResult(${match.id},'match')" class="btn-icon-red">🗑️</button>`:''}</div>
+            ${hasResult
+                ? `<div class="match-teams-compact">
+                       <span class="mtc-side mtc-left">
+                           <span class="mtc-flag">${flag(match.team1)}</span>
+                           <span class="mtc-name${result.s1>result.s2?' mtc-win':''}">${match.team1}</span>
+                       </span>
+                       <span class="mtc-score">
+                           <b class="${result.s1>result.s2?'mtc-win':''}">${result.s1}</b><i>—</i><b class="${result.s2>result.s1?'mtc-win':''}">${result.s2}</b>
+                       </span>
+                       <span class="mtc-side mtc-right">
+                           <span class="mtc-name${result.s2>result.s1?' mtc-win':''}">${match.team2}</span>
+                           <span class="mtc-flag">${flag(match.team2)}</span>
+                       </span>
+                   </div>`
+                : `<div class="match-teams">
+                <div class="team-col">
+                    <span class="team-flag-big">${flag(match.team1)}</span>
+                    <span class="team-name-lbl">${match.team1}</span>
+                </div>
+                <div class="versus-col">
+                    ${isLive
+                            ? `<span class="versus live-vs">🔴</span>`
+                            : `<div class="versus">VS</div>`
+                    }
+                    ${match.date&&match.time?`<div data-countdown-match="${match.id}" data-countdown-date="${match.date}" data-countdown-time="${match.time}" class="match-countdown countdown-normal"><span class="cd-value">--:--</span></div>`:''}
+                </div>
+                <div class="team-col team-col-right">
+                    <span class="team-flag-big">${flag(match.team2)}</span>
+                    <span class="team-name-lbl">${match.team2}</span>
+                </div>
+            </div>`}`;
+        if(isAdmin){const isLocked=result.locked===true;html+=`<div class="admin-box"><div class="admin-box-title">🔐 Résultat officiel
+                ${hasResult&&!isLocked?`<button onclick="app.clearResult(${match.id},'match')" class="btn-icon-red">🗑️</button>`:''}
+                ${hasResult?(isLocked?`<button onclick="app.unlockResult(${match.id},'match')" class="btn-icon" title="Déverrouiller">🔓</button><span style="color:#dc3545;font-size:11px;font-weight:600">VERROUILLÉ</span>`:`<button onclick="app.lockResult(${match.id},'match')" class="btn-icon" title="Verrouiller le résultat">🔒</button>`):''}</div>
             <div class="admin-score-row">
                 <span class="admin-team">${flag(match.team1)} ${match.team1}</span>
-                <input type="number" min="0" class="score-input admin-input" value="${result.s1!==undefined?result.s1:''}" placeholder="-" onchange="app.saveResult(${match.id},'s1',this.value,'match')">
+                <input type="number" min="0" class="score-input admin-input" value="${result.s1!==undefined?result.s1:''}" placeholder="-" ${isLocked?'disabled style="opacity:.5"':''} onchange="app.saveResult(${match.id},'s1',this.value,'match')">
                 <span class="admin-dash">—</span>
-                <input type="number" min="0" class="score-input admin-input" value="${result.s2!==undefined?result.s2:''}" placeholder="-" onchange="app.saveResult(${match.id},'s2',this.value,'match')">
+                <input type="number" min="0" class="score-input admin-input" value="${result.s2!==undefined?result.s2:''}" placeholder="-" ${isLocked?'disabled style="opacity:.5"':''} onchange="app.saveResult(${match.id},'s2',this.value,'match')">
                 <span class="admin-team">${flag(match.team2)} ${match.team2}</span>
-            </div></div>`;
-        html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div>`;
+            </div></div>`;}
+        const allPlayers=d.players;
         const mePlayer=d.players.find(p=>p.name===me);
         const otherPlayers=d.players.filter(p=>p.name!==me);
-        // Mettre l'utilisateur actuel en premier dans la grille
-        const allPlayers=mePlayer?[mePlayer,...otherPlayers]:otherPlayers;
-        html+=`<div class="bets-grid">`;
-        // Tri : utilisateur actuel en premier, puis pronostics réalisés, en attente ensuite
-        const sortedPlayers=allPlayers.sort((a,b)=>{
-            if(a.name===me)return -1;
-            if(b.name===me)return 1;
-            const aBet=d.bets[a.name]?.[match.id]||{};
-            const bBet=d.bets[b.name]?.[match.id]||{};
-            const aHas=aBet.s1!==undefined&&aBet.s2!==undefined;
-            const bHas=bBet.s1!==undefined&&bBet.s2!==undefined;
-            return (bHas?1:0)-(aHas?1:0);
-        });
-        sortedPlayers.forEach((player,idx)=>{
-            const bet=d.bets[player.name]?.[match.id]||{};
-            const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
-            const isLocked=bet.locked===true;
-            const isMe=player.name===me;
-            const canEdit=isAdmin?true:(isMe&&!isLocked&&!hasResult);
-            let ptsHtml='';
-            if(hasResult&&hasBet){const pts=this.calcPoints({s1:bet.s1,s2:bet.s2},{s1:result.s1,s2:result.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
-            const rowClass=isMe?'bet-row-me':'bet-row-grid';
-            const noBetClass=!hasBet?'no-bet-card':'';
-            html+=`<div class="bet-row ${rowClass} ${noBetClass}">
-                <div class="bet-player">${isMe?'<span class="dot-me">●</span>':''}<strong>${player.name}</strong>${isMe?'<span class="tag-me">Vous</span>':''}${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
-                <div class="bet-score-zone">`;
-            if(canEdit){
-                const cls=isAdmin?'admin-input':'my-input';
-                if(isMe){
-                    html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
-                        <span class="bet-sep">—</span>
-                        <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')">`;
-                    if(!isAdmin)html+=`<button onclick="app.lockBet('${player.name}',${match.id},'match')" class="btn btn-validate">✅ Valider</button>`;
-                }else{
-                    html+=`<span class="bet-team-flag">${flag(match.team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
-                        <span class="bet-sep">—</span>
-                        <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')"><span class="bet-team-flag">${flag(match.team2)}</span>`;
+
+        if(isAdmin){
+            // ── Vue admin : grille compacte, toutes les colonnes ──
+            html+=`<div class="bets-table"><div class="bets-header-admin">👥 Pronostics <span class="bets-count">${allPlayers.length} joueurs</span></div><div class="bets-grid">`;
+            const sorted=[...allPlayers].sort((a,b)=>{
+                const aB=d.bets[a.name]?.[match.id]||{},bB=d.bets[b.name]?.[match.id]||{};
+                const aHas=aB.s1!==undefined,bHas=bB.s1!==undefined;
+                if(hasResult){
+                    const aP=aHas?this.calcPoints({s1:aB.s1,s2:aB.s2},{s1:result.s1,s2:result.s2}):-1;
+                    const bP=bHas?this.calcPoints({s1:bB.s1,s2:bB.s2},{s1:result.s1,s2:result.s2}):-1;
+                    return bP-aP;
                 }
-                if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
-            }else{
-                if(hasBet)html+=`<span class="readonly-score">${isMe?'':flag(match.team1)+' '}${bet.s1} — ${bet.s2}${isMe?'':' '+flag(match.team2)}</span>`;
-                else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
-                if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-icon">🔓</button>`;
-                if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-icon-red">🗑️</button>`;
-            }
-            html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
-        });
-        html+=`</div>`;
-        html+=`</div></div>`;return html;
+                return (bHas?1:0)-(aHas?1:0);
+            });
+            sorted.forEach(player=>{
+                const bet=d.bets[player.name]?.[match.id]||{};
+                const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+                const isLocked=bet.locked===true;
+                let pts='';
+                if(hasResult&&hasBet){const p=this.calcPoints({s1:bet.s1,s2:bet.s2},{s1:result.s1,s2:result.s2});pts=`<span class="pts-badge pts${p}">${p}p</span>`;}
+                html+=`<div class="admin-bet-card ${!hasBet?'no-bet-card':''}">
+                    <div class="abc-top">
+                        <strong class="abc-name">${player.name}</strong>
+                        ${isLocked&&!hasResult?'<span title="Verrouillé" style="font-size:11px">🔒</span>':''}
+                        ${pts}
+                        <span class="abc-actions">
+                            ${hasBet?`<button onclick="app.adminUnlockBet('${player.name}',${match.id},'match')" class="btn-xs" title="Déverrouiller">🔓</button>`:''}
+                            ${hasBet?`<button onclick="app.adminClearBet('${player.name}',${match.id},'match')" class="btn-xs-red" title="Effacer">🗑️</button>`:''}
+                        </span>
+                    </div>
+                    <div class="abc-score">
+                        <span class="mini-flag">${flag(match.team1)}</span>
+                        <input type="number" min="0" class="score-input admin-input-sm" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
+                        <span class="bet-sep">—</span>
+                        <input type="number" min="0" class="score-input admin-input-sm" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')">
+                        <span class="mini-flag">${flag(match.team2)}</span>
+                    </div>
+                </div>`;
+            });
+            html+=`</div></div></div>`;
+        }else if(hasResult){
+            // ── Vue joueur, match terminé : 2 colonnes (score + liste joueurs) ──
+            const sortedAll=[...allPlayers].sort((a,b)=>{
+                const aIsMe=a.name===me, bIsMe=b.name===me;
+                const aB=d.bets[a.name]?.[match.id]||{},bB=d.bets[b.name]?.[match.id]||{};
+                const aHas=aB.s1!==undefined,bHas=bB.s1!==undefined;
+                const aP=aHas?this.calcPoints({s1:aB.s1,s2:aB.s2},{s1:result.s1,s2:result.s2}):-1;
+                const bP=bHas?this.calcPoints({s1:bB.s1,s2:bB.s2},{s1:result.s1,s2:result.s2}):-1;
+                if(bP!==aP)return bP-aP;
+                if(aIsMe)return -1;
+                if(bIsMe)return 1;
+                return 0;
+            });
+            html+=`<div class="bets-table"><div class="bets-header">📊 Classement du match</div><div class="mini-rank-tags">`;
+            sortedAll.forEach((player,idx)=>{
+                const isMe=player.name===me;
+                const bet=d.bets[player.name]?.[match.id]||{};
+                const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+                const pts=hasBet?this.calcPoints({s1:bet.s1,s2:bet.s2},{s1:result.s1,s2:result.s2}):0;
+                const ptsHtml=hasBet?`<span class="pts-badge pts${pts}">${pts}</span>`:'';
+                html+=`<div class="mr2-row${isMe?' mr2-me':''}${!hasBet?' mr2-nobet':''}">
+                    <span class="mr2-name">${player.name}${isMe?'<span class="tag-me">Vous</span>':''}</span>
+                    ${ptsHtml}
+                    <span class="mr2-bet">${hasBet?`${bet.s1}-${bet.s2}`:'—'}</span>
+                </div>`;
+            });
+            html+=`</div></div></div>`;
+        }else{
+            // ── Vue joueur : grille unique, utilisateur en premier ──
+            html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div><div class="bets-grid">`;
+            // Tri : moi en premier, puis a-pronostiqué d'abord
+            const sortedAll=[...allPlayers].sort((a,b)=>{
+                const aIsMe=a.name===me, bIsMe=b.name===me;
+                const aB=d.bets[a.name]?.[match.id]||{},bB=d.bets[b.name]?.[match.id]||{};
+                const aHas=aB.s1!==undefined,bHas=bB.s1!==undefined;
+                if(aIsMe)return -1;
+                if(bIsMe)return 1;
+                return (bHas?1:0)-(aHas?1:0);
+            });
+            sortedAll.forEach(player=>{
+                const isMe=player.name===me;
+                const bet=d.bets[player.name]?.[match.id]||{};
+                const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+                const isLocked=bet.locked===true;
+                const canEdit=isMe&&!isLocked;
+
+                if(canEdit){
+                    // Carte éditable : layout vertical propre
+                    html+=`<div class="bet-row bet-row-grid bet-row-me bet-card-edit">
+                        <div class="bce-name"><span class="dot-me">●</span><strong>${player.name}</strong>${isLocked?'<span class="lock-icon">🔒</span>':''}</div>
+                        <div class="bce-inputs">
+                            <span class="bet-team-flag">${flag(match.team1)}</span>
+                            <input type="number" min="0" class="score-input my-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s1',this.value,'match')">
+                            <span class="bce-dash">—</span>
+                            <input type="number" min="0" class="score-input my-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}',${match.id},'s2',this.value,'match')">
+                            <span class="bet-team-flag">${flag(match.team2)}</span>
+                        </div>
+                        <button onclick="app.lockBet('${player.name}',${match.id},'match')" class="btn btn-validate bce-btn">✅ Valider</button>
+                    </div>`;
+                }else{
+                    html+=`<div class="bet-row bet-row-grid${isMe?' bet-row-me':''} ${!hasBet?'no-bet-card':''}">
+                        <div class="bet-player">
+                            ${isMe?`<span class="dot-me">●</span>`:''}
+                            <strong>${player.name}</strong>
+                            ${isLocked?'<span class="lock-icon">🔒</span>':''}
+                        </div>
+                        <div class="bet-score-zone">
+                            ${hasBet?`<span class="readonly-score">${flag(match.team1)} ${bet.s1} — ${bet.s2} ${flag(match.team2)}</span>`:`<span class="no-bet">—</span>`}
+                        </div>
+                    </div>`;
+                }
+            });
+            html+=`</div></div></div>`;
+        }
+        return html;
     }
 
     saveBet(playerName,matchId,field,value,type){
@@ -901,8 +1596,10 @@ class App{
 
     clearResult(matchId,type){
         if(!currentUser.isAdmin)return;
-        if(!confirm('Effacer ce résultat officiel ?'))return;
         const d=this.d();
+        if(type==='match'&&d.results[matchId]?.locked){this.toast('🔒 Résultat verrouillé — déverrouillez d\'abord !');return;}
+        if(type==='playoff'&&d.playoffResults[matchId]?.locked){this.toast('🔒 Résultat verrouillé — déverrouillez d\'abord !');return;}
+        if(!confirm('Effacer ce résultat officiel ?'))return;
         if(type==='match')delete d.results[matchId];
         else if(d.playoffResults[matchId]){delete d.playoffResults[matchId].s1;delete d.playoffResults[matchId].s2;}
         this.save(d);
@@ -914,12 +1611,39 @@ class App{
     saveResult(matchId,field,value,type){
         if(!currentUser.isAdmin)return;
         const d=this.d();
-        if(type==='match'){if(!d.results[matchId])d.results[matchId]={};d.results[matchId][field]=value===''?undefined:parseInt(value);}
-        else{if(!d.playoffResults[matchId])d.playoffResults[matchId]={};d.playoffResults[matchId][field]=value===''?undefined:parseInt(value);}
+        if(type==='match'){
+            if(d.results[matchId]?.locked){this.toast('🔒 Résultat verrouillé !');return;}
+            if(!d.results[matchId])d.results[matchId]={};
+            d.results[matchId][field]=value===''?undefined:parseInt(value);
+        }else{
+            if(d.playoffResults[matchId]?.locked){this.toast('🔒 Résultat verrouillé !');return;}
+            if(!d.playoffResults[matchId])d.playoffResults[matchId]={};
+            d.playoffResults[matchId][field]=value===''?undefined:parseInt(value);
+        }
         this.save(d);
         if(type==='match')this.renderMatches();
         else this.renderPlayoffs(document.getElementById('phaseFilter').value);
         this.renderRanking();
+    }
+
+    lockResult(matchId,type){
+        if(!currentUser.isAdmin)return;
+        const d=this.d();
+        if(type==='match'){if(!d.results[matchId]||d.results[matchId].s1===undefined)return;d.results[matchId].locked=true;}
+        else{if(!d.playoffResults[matchId]||d.playoffResults[matchId].s1===undefined)return;d.playoffResults[matchId].locked=true;}
+        this.save(d);
+        if(type==='match')this.renderMatches();else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+        this.toast('🔒 Résultat verrouillé !');
+    }
+
+    unlockResult(matchId,type){
+        if(!currentUser.isAdmin)return;
+        const d=this.d();
+        if(type==='match'){if(d.results[matchId])d.results[matchId].locked=false;}
+        else{if(d.playoffResults[matchId])d.playoffResults[matchId].locked=false;}
+        this.save(d);
+        if(type==='match')this.renderMatches();else this.renderPlayoffs(document.getElementById('phaseFilter').value);
+        this.toast('🔓 Résultat déverrouillé !');
     }
 
     unlockAll(target){
@@ -934,56 +1658,71 @@ class App{
 
     async syncOfficialResults(){
         if(!currentUser.isAdmin)return;
+        await this.doSync(false);
+    }
+
+    async doSync(silent=false){
         const status=document.getElementById('syncStatus');
-        const setStatus=(msg,color)=>{if(status){status.textContent=msg;status.style.color=color||'#6c757d';}};
-        setStatus('🔄 Récupération des matchs depuis TheSportsDB...', '#17a2b8');
+        const setStatus=(msg,color)=>{if(status&&!silent){status.textContent=msg;status.style.color=color||'#6c757d';}};
+        setStatus('🔄 Récupération des matchs depuis ESPN...','#17a2b8');
         try{
-            const url=`https://www.thesportsdb.com/api/v1/json/${SPORTSDB_KEY}/eventsseason.php?id=${SPORTSDB_LEAGUE}&s=${SPORTSDB_SEASON}`;
-            const r=await fetch(url);
+            const r=await fetch(ESPN_API_URL);
             if(!r.ok)throw new Error('HTTP '+r.status);
             const json=await r.json();
             const events=json.events||[];
-            if(!events.length){setStatus('Aucun match disponible pour le moment.', '#856404');return;}
+            if(!events.length){setStatus('Aucun match disponible pour le moment.','#856404');return;}
             const d=this.d();
             let updated=0,unmatched=[],pending=0;
             events.forEach(ev=>{
-                const homeEN=ev.strHomeTeam, awayEN=ev.strAwayTeam;
-                const s1raw=ev.intHomeScore, s2raw=ev.intAwayScore;
-                // pas de score = match pas encore joué
-                if(s1raw===null||s1raw===''||s2raw===null||s2raw===''){pending++;return;}
+                const status=ev.fullStatus?.type?.state;
+                if(status!=='post'){pending++;return;}
+                const competitors=ev.competitors||[];
+                if(competitors.length<2)return;
+                const home=competitors[0],away=competitors[1];
+                const homeEN=home.displayName,awayEN=away.displayName;
+                const s1raw=home.score,s2raw=away.score;
+                if(s1raw===''||s2raw===''){pending++;return;}
                 const homeFR=TEAM_EN_TO_FR[normalizeTeamName(homeEN)];
                 const awayFR=TEAM_EN_TO_FR[normalizeTeamName(awayEN)];
                 if(!homeFR||!awayFR){unmatched.push(`${homeEN} vs ${awayEN}`);return;}
-                const s1=parseInt(s1raw,10), s2=parseInt(s2raw,10);
+                const s1=parseInt(s1raw,10),s2=parseInt(s2raw,10);
                 if(isNaN(s1)||isNaN(s2))return;
-                // Cherche le match groupe correspondant
                 const m=this.matches.find(x=>(x.team1===homeFR&&x.team2===awayFR)||(x.team1===awayFR&&x.team2===homeFR));
                 if(m){
+                    if(d.results[m.id]?.locked)return;
                     const inverted=(m.team1===awayFR);
-                    const ns1=inverted?s2:s1, ns2=inverted?s1:s2;
+                    const ns1=inverted?s2:s1,ns2=inverted?s1:s2;
                     const cur=d.results[m.id]||{};
                     if(cur.s1!==ns1||cur.s2!==ns2){d.results[m.id]={s1:ns1,s2:ns2};updated++;}
                     return;
                 }
-                // Sinon cherche en playoffs (par noms d'équipes)
-                const p=this.playoffs.find(x=>{const r=d.playoffResults[x.id]||{};const t1=r.team1||x.team1,t2=r.team2||x.team2;return (t1===homeFR&&t2===awayFR)||(t1===awayFR&&t2===homeFR);});
+                const p=this.playoffs.find(x=>{const rv=d.playoffResults[x.id]||{};const t1=rv.team1||x.team1,t2=rv.team2||x.team2;return (t1===homeFR&&t2===awayFR)||(t1===awayFR&&t2===homeFR);});
                 if(p){
+                    if(d.playoffResults[p.id]?.locked)return;
                     const r2=d.playoffResults[p.id]||{};const t1=r2.team1||p.team1;
                     const inverted=(t1===awayFR);
-                    const ns1=inverted?s2:s1, ns2=inverted?s1:s2;
+                    const ns1=inverted?s2:s1,ns2=inverted?s1:s2;
                     if(r2.s1!==ns1||r2.s2!==ns2){d.playoffResults[p.id]=Object.assign({},r2,{s1:ns1,s2:ns2});updated++;}
                 }else{unmatched.push(`${homeEN} vs ${awayEN}`);}
             });
-            this.save(d);
-            this.renderMatches();this.renderPlayoffs(document.getElementById('phaseFilter').value);this.renderRanking();
-            const msgParts=[`✅ ${updated} match(s) mis à jour`,`${pending} en attente`];
-            if(unmatched.length)msgParts.push(`${unmatched.length} non reconnu(s)`);
-            setStatus(msgParts.join(' · '), updated?'#28a745':'#6c757d');
-            if(unmatched.length){console.warn('Matchs non reconnus :',unmatched);}
-            this.toast(`🌍 Sync : ${updated} résultat(s) importé(s)`);
+            if(updated>0){
+                saveData(d);
+                this.renderMatches();this.renderPlayoffs(document.getElementById('phaseFilter').value);this.renderRanking();
+            }
+            if(silent){
+                _lastAutoSync=Date.now();
+                updateAutoSyncUI();
+                if(updated>0)this.toast(`🌍 Auto-sync : ${updated} résultat(s) mis à jour`);
+            }else{
+                const msgParts=[`✅ ${updated} match(s) mis à jour`,`${pending} en attente`];
+                if(unmatched.length)msgParts.push(`${unmatched.length} non reconnu(s)`);
+                setStatus(msgParts.join(' · '),updated?'#28a745':'#6c757d');
+                if(unmatched.length)console.warn('Matchs non reconnus :',unmatched);
+                this.toast(`🌍 Sync : ${updated} résultat(s) importé(s)`);
+            }
         }catch(e){
-            console.error('Sync sportsdb error:',e);
-            setStatus('❌ Erreur : '+e.message, '#dc3545');
+            console.error('Sync ESPN error:',e);
+            setStatus('❌ Erreur : '+e.message,'#dc3545');
         }
     }
 
@@ -998,14 +1737,16 @@ class App{
         const hasTeams=team1!=='À déterminer'&&team2!=='À déterminer';
         const hasResult=res.s1!==undefined&&res.s2!==undefined;
         const isAdmin=currentUser.isAdmin,me=currentUser.name;
-        let html=`<div class="match-card playoff-card ${hasResult?'is-finished':''}">
+        let html=`<div id="playoff-card-${playoff.id}" class="match-card playoff-card ${hasResult?'is-finished':''}">
             <div class="match-header">
                 <span class="group-badge playoff-badge">${playoff.phase} · Match ${playoff.match}</span>
                 <span class="match-date">📅 ${playoff.date}</span>
                 <span class="${hasResult?'badge-finished':'badge-open'}" style="margin-left:auto">${hasResult?'✅ Terminé':'⏳ En attente'}</span>
             </div>`;
-        if(isAdmin){
-            html+=`<div class="admin-box"><div class="admin-box-title">🔐 Configurer équipes et résultat</div>
+        if(isAdmin){const isLocked=res.locked===true;
+            html+=`<div class="admin-box"><div class="admin-box-title">🔐 Configurer équipes et résultat
+                ${hasResult&&!isLocked?`<button onclick="app.clearResult('${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`:''}
+                ${hasResult?(isLocked?`<button onclick="app.unlockResult('${playoff.id}','playoff')" class="btn-icon" title="Déverrouiller">🔓</button><span style="color:#dc3545;font-size:11px;font-weight:600">VERROUILLÉ</span>`:`<button onclick="app.lockResult('${playoff.id}','playoff')" class="btn-icon" title="Verrouiller">🔒</button>`):''}</div>
                 <div class="playoff-teams-row">
                     <input type="text" class="team-edit-input" placeholder="Équipe 1" value="${team1!=='À déterminer'?team1:''}" onchange="app.savePlayoffTeam('${playoff.id}','team1',this.value)">
                     <span class="versus">VS</span>
@@ -1013,11 +1754,10 @@ class App{
                 </div>
                 <div class="admin-score-row" style="margin-top:14px">
                     <span class="admin-team">${flag(team1)} ${team1}</span>
-                    <input type="number" min="0" class="score-input admin-input" value="${res.s1!==undefined?res.s1:''}" placeholder="-" onchange="app.saveResult('${playoff.id}','s1',this.value,'playoff')">
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s1!==undefined?res.s1:''}" placeholder="-" ${isLocked?'disabled style="opacity:.5"':''} onchange="app.saveResult('${playoff.id}','s1',this.value,'playoff')">
                     <span class="admin-dash">—</span>
-                    <input type="number" min="0" class="score-input admin-input" value="${res.s2!==undefined?res.s2:''}" placeholder="-" onchange="app.saveResult('${playoff.id}','s2',this.value,'playoff')">
+                    <input type="number" min="0" class="score-input admin-input" value="${res.s2!==undefined?res.s2:''}" placeholder="-" ${isLocked?'disabled style="opacity:.5"':''} onchange="app.saveResult('${playoff.id}','s2',this.value,'playoff')">
                     <span class="admin-team">${flag(team2)} ${team2}</span>
-                    ${hasResult?`<button onclick="app.clearResult('${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`:''}
                 </div></div>`;
         }else{
             html+=`<div class="match-teams"><div class="team-name">${this.teamDisplay(team1,true)}</div><div class="versus">VS</div><div class="team-name">${this.teamDisplay(team2,true)}</div></div>`;
@@ -1027,56 +1767,67 @@ class App{
             html+=`<div class="bets-table"><div class="bets-header">📊 Pronostics de tous les joueurs</div>`;
             const mePlayer=d.players.find(p=>p.name===me);
             const otherPlayers=d.players.filter(p=>p.name!==me);
-            // Mettre l'utilisateur actuel en premier dans la grille
-            const allPlayers=mePlayer?[mePlayer,...otherPlayers]:otherPlayers;
-            html+=`<div class="bets-grid">`;
-            // Tri : utilisateur actuel en premier, puis pronostics réalisés, en attente ensuite
-            const sortedPlayers=allPlayers.sort((a,b)=>{
-                if(a.name===me)return -1;
-                if(b.name===me)return 1;
-                const aBet=d.playoffBets[a.name]?.[playoff.id]||{};
-                const bBet=d.playoffBets[b.name]?.[playoff.id]||{};
-                const aHas=aBet.s1!==undefined&&aBet.s2!==undefined;
-                const bHas=bBet.s1!==undefined&&bBet.s2!==undefined;
-                return (bHas?1:0)-(aHas?1:0);
-            });
-            sortedPlayers.forEach((player,idx)=>{
-                const bet=d.playoffBets[player.name]?.[playoff.id]||{};
+            if(mePlayer){
+                const bet=d.playoffBets[mePlayer.name]?.[playoff.id]||{};
                 const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
                 const isLocked=bet.locked===true;
-                const isMe=player.name===me;
-                const canEdit=isAdmin?true:(isMe&&!isLocked&&!hasResult);
+                const canEdit=isAdmin?true:(!isLocked&&!hasResult);
                 let ptsHtml='';
                 if(hasResult&&hasBet){const pts=this.calcPlayoffPoints({s1:bet.s1,s2:bet.s2},{s1:res.s1,s2:res.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
-                const rowClass=isMe?'bet-row-me':'bet-row-grid';
-                const noBetClass=!hasBet?'no-bet-card':'';
-                html+=`<div class="bet-row ${rowClass} ${noBetClass}">
-                    <div class="bet-player">${isMe?'<span class="dot-me">●</span>':''}<strong>${player.name}</strong>${isMe?'<span class="tag-me">Vous</span>':''}${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
+                html+=`<div class="bet-row bet-row-me">
+                    <div class="bet-player"><span class="dot-me">●</span><strong>${mePlayer.name}</strong><span class="tag-me">Vous</span>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
                     <div class="bet-score-zone">`;
                 if(canEdit){
                     const cls=isAdmin?'admin-input':'my-input';
-                    if(isMe){
-                        html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s1',this.value,'playoff')">
-                            <span class="bet-sep">—</span>
-                            <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s2',this.value,'playoff')">`;
-                        if(!isAdmin)html+=`<button onclick="app.lockBet('${player.name}','${playoff.id}','playoff')" class="btn btn-validate">✅ Valider</button>`;
-                    }else{
+                    html+=`<input type="number" min="0" class="score-input ${cls}" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s1',this.value,'playoff')">
+                        <span class="bet-sep">—</span>
+                        <input type="number" min="0" class="score-input ${cls}" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${mePlayer.name}','${playoff.id}','s2',this.value,'playoff')">`;
+                    if(!isAdmin)html+=`<button onclick="app.lockBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn btn-validate">✅ Valider</button>`;
+                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
+                }else{
+                    if(hasBet)html+=`<span class="readonly-score">${bet.s1} — ${bet.s2}</span>`;
+                    else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
+                    if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button>`;
+                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${mePlayer.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
+                }
+                html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
+            }
+            if(otherPlayers.length>0){
+                html+=`<div class="bets-grid">`;
+                // Tri : pronostics réalisés en premier, en attente ensuite
+                const sortedPlayers=[...otherPlayers].sort((a,b)=>{
+                    const aBet=d.playoffBets[a.name]?.[playoff.id]||{};
+                    const bBet=d.playoffBets[b.name]?.[playoff.id]||{};
+                    const aHas=aBet.s1!==undefined&&aBet.s2!==undefined;
+                    const bHas=bBet.s1!==undefined&&bBet.s2!==undefined;
+                    return (bHas?1:0)-(aHas?1:0);
+                });
+                sortedPlayers.forEach((player,idx)=>{
+                    const bet=d.playoffBets[player.name]?.[playoff.id]||{};
+                    const hasBet=bet.s1!==undefined&&bet.s2!==undefined;
+                    const isLocked=bet.locked===true;
+                    const canEdit=isAdmin?true:false;
+                    let ptsHtml='';
+                    if(hasResult&&hasBet){const pts=this.calcPlayoffPoints({s1:bet.s1,s2:bet.s2},{s1:res.s1,s2:res.s2});ptsHtml=`<span class="pts-badge pts${pts}">${pts} pts</span>`;}
+                    html+=`<div class="bet-row bet-row-grid ${!hasBet?'no-bet-card':''}">
+                        <div class="bet-player"><strong>${player.name}</strong>${isLocked&&!hasResult?'<span class="lock-icon">🔒</span>':''}</div>
+                        <div class="bet-score-zone">`;
+                    if(canEdit){
                         html+=`<span class="bet-team-flag">${flag(team1)}</span><input type="number" min="0" class="score-input admin-input" value="${bet.s1!==undefined?bet.s1:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s1',this.value,'playoff')">
                             <span class="bet-sep">—</span>
                             <input type="number" min="0" class="score-input admin-input" value="${bet.s2!==undefined?bet.s2:''}" placeholder="-" onchange="app.saveBet('${player.name}','${playoff.id}','s2',this.value,'playoff')"><span class="bet-team-flag">${flag(team2)}</span>`;
+                        if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
+                    }else{
+                        if(hasBet)html+=`<span class="readonly-score">${flag(team1)} ${bet.s1} — ${bet.s2} ${flag(team2)}</span>`;
+                        else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
+                        if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button>`;
+                        if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
                     }
-                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button><button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
-                }else{
-                    if(hasBet)html+=`<span class="readonly-score">${isMe?'':flag(team1)+' '}${bet.s1} — ${bet.s2}${isMe?'':' '+flag(team2)}</span>`;
-                    else html+=`<span class="no-bet">Pas encore de pronostic</span>`;
-                    if(isAdmin&&isLocked)html+=`<button onclick="app.adminUnlockBet('${player.name}','${playoff.id}','playoff')" class="btn-icon">🔓</button>`;
-                    if(isAdmin&&hasBet)html+=`<button onclick="app.adminClearBet('${player.name}','${playoff.id}','playoff')" class="btn-icon-red">🗑️</button>`;
-                }
-                html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
-            });
+                    html+=`</div><div class="bet-pts">${ptsHtml}</div></div>`;
+                });
+                html+=`</div>`;
+            }
             html+=`</div>`;
-        }
-        html+=`</div>`;
         }else{html+=`<div class="no-teams-msg">⏳ Les équipes seront déterminées prochainement</div>`;}
         html+=`</div>`;return html;
     }
@@ -1091,10 +1842,8 @@ class App{
     calcPoints(bet,result){
         const b1=bet.s1,b2=bet.s2,r1=result.s1,r2=result.s2;
         if(b1===undefined||r1===undefined)return 0;
-        if(b1===r1&&b2===r2)return 5;
-        const bDiff=b1-b2,rDiff=r1-r2;
-        const bRes=bDiff>0?'W':bDiff<0?'L':'D',rRes=rDiff>0?'W':rDiff<0?'L':'D';
-        if(bRes===rRes&&Math.abs(bDiff)===Math.abs(rDiff))return 3;
+        if(b1===r1&&b2===r2)return 3;
+        const bRes=(b1>b2?'W':b1<b2?'L':'D'),rRes=(r1>r2?'W':r1<r2?'L':'D');
         if(bRes===rRes)return 1;
         return 0;
     }
@@ -1102,38 +1851,92 @@ class App{
     calcPlayoffPoints(bet,result){
         const b1=bet.s1,b2=bet.s2,r1=result.s1,r2=result.s2;
         if(b1===undefined||r1===undefined)return 0;
-        if(b1===r1&&b2===r2)return 5;
-        const bWin=b1>b2?'1':b1<b2?'2':'D',rWin=r1>r2?'1':r1<r2?'2':'D';
-        if(bWin===rWin)return 3;return 0;
+        if(b1===r1&&b2===r2)return 3;
+        const bWin=(b1>b2?'1':b1<b2?'2':'D'),rWin=(r1>r2?'1':r1<r2?'2':'D');
+        if(bWin===rWin)return 1;return 0;
     }
 
     renderRanking(){
         const d=this.d(),ranking=this.calcRanking(d);
         const nbG=Object.values(d.results).filter(r=>r.s1!==undefined).length;
         const nbP=Object.values(d.playoffResults).filter(r=>r.s1!==undefined).length;
+        
+        // Trouver le prochain match à venir
+        const allMatches=[...this.matches,...this.playoffs];
+        const now=new Date();
+        const upcomingMatches=allMatches.filter(m=>{
+            if(!m.date||!m.time)return false;
+            const matchDate=parseMatchDateTime(m.date,m.time);
+            if(!matchDate)return false;
+            return matchDate>now && !d.results[m.id]?.s1 && !d.playoffResults[m.id]?.s1;
+        }).sort((a,b)=>{
+            const da=parseMatchDateTime(a.date,a.time);
+            const db=parseMatchDateTime(b.date,b.time);
+            return da-db;
+        });
+        const nextMatch=upcomingMatches[0];
+        
         document.getElementById('statsSummary').innerHTML=`
             <div class="stat-card"><div class="stat-icon">⚽</div><div class="stat-label">Groupes joués</div><div class="stat-value">${nbG}<span>/72</span></div></div>
             <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-label">Playoffs joués</div><div class="stat-value">${nbP}<span>/32</span></div></div>
             <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Participants</div><div class="stat-value">${d.players.length}</div></div>
             <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-label">Leader</div><div class="stat-value leader">${ranking[0]?.name||'—'}</div></div>`;
-        document.getElementById('rankingTable').innerHTML=`
+        
+        // Afficher le prochain match avec countdown
+        let nextMatchHtml='';
+        if(nextMatch){
+            nextMatchHtml=`<div class="next-match-card">
+                <div class="next-match-header">⏰ Prochain match</div>
+                <div class="next-match-teams">
+                    <span class="nm-flag">${flag(nextMatch.team1)}</span>
+                    <span class="nm-name">${nextMatch.team1}</span>
+                    <span class="nm-vs">vs</span>
+                    <span class="nm-flag">${flag(nextMatch.team2)}</span>
+                    <span class="nm-name">${nextMatch.team2}</span>
+                </div>
+                <div data-countdown-match="${nextMatch.id}" data-countdown-date="${nextMatch.date}" data-countdown-time="${nextMatch.time}" class="match-countdown countdown-normal"><span class="cd-value">--:--</span></div>
+            </div>`;
+        }
+        const isMe=(name)=>name===currentUser.name&&!currentUser.isAdmin;
+        // Podium top 3
+        const podiumOrder=[ranking[1],ranking[0],ranking[2]]; // 2e, 1er, 3e
+        const medals=['🥈','🥇','🥉'];
+        const podiumH=['podium-2nd','podium-1st','podium-3rd'];
+        let podiumHtml='';
+        if(ranking.length>=1){
+            podiumHtml=`<div class="podium-wrap">
+                ${podiumOrder.map((p,i)=>p?`
+                <div class="podium-slot ${podiumH[i]}${isMe(p.name)?' podium-me':''}">
+                    <div class="podium-avatar">${p.name.charAt(0).toUpperCase()}</div>
+                    <div class="podium-name">${p.name}${isMe(p.name)?'<span class="dot-me" style="margin-left:4px">●</span>':''}</div>
+                    <div class="podium-pts">${p.total} pts</div>
+                    <div class="podium-block">
+                        <span class="podium-medal">${medals[i]}</span>
+                    </div>
+                </div>`:'<div class="podium-slot podium-empty"></div>').join('')}
+            </div>`;
+        }
+        const medalCls=['rank-gold','rank-silver','rank-bronze'];
+        const tableHtml=ranking.length>0?`
         <table class="rank-table">
-            <thead><tr><th>#</th><th>Joueur</th><th>⚽ Groupes</th><th>🏅 Playoffs</th><th>🏆 Total</th><th>Paris</th><th>Moy.</th></tr></thead>
+            <thead><tr><th>#</th><th>Joueur</th><th>⚽</th><th>🏅</th><th>Total</th><th>Moy.</th></tr></thead>
             <tbody>${ranking.map((p,i)=>`
-            <tr class="${p.name===currentUser.name&&!currentUser.isAdmin?'rank-me':''} ${i<3?'rank-top':''}">
+            <tr class="${medalCls[i]||''} ${isMe(p.name)?'rank-me':''}">
                 <td class="rank-pos">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-                <td><strong>${p.name}</strong>${p.name===currentUser.name&&!currentUser.isAdmin?'<span class="tag-me">Vous</span>':''}</td>
-                <td>${p.gPts}</td><td>${p.pPts}</td><td class="rank-total">${p.total}</td><td>${p.played}</td><td>${p.avg}</td>
+                <td><strong>${p.name}</strong>${isMe(p.name)?'<span class="dot-me" style="margin-left:4px;font-size:10px">●</span>':''}</td>
+                <td>${p.gPts}</td><td>${p.pPts}</td>
+                <td class="rank-total">${p.total}</td><td>${p.avg}</td>
             </tr>`).join('')}</tbody>
-        </table>
-        <div class="ranking-rules"><div class="ranking-rules-title">📖 Règles du jeu</div>
+        </table>`:'';
+        document.getElementById('rankingTable').innerHTML=`
+        ${nextMatchHtml}
+        ${podiumHtml}
+        ${tableHtml}
+        <div class="ranking-rules"><div class="ranking-rules-title">📖 Règles</div>
         <div class="ranking-rules-grid">
-            <div class="ranking-rule-item"><span class="pts-badge pts5">5 pts</span><span>Score exact</span></div>
-            <div class="ranking-rule-item"><span class="pts-badge pts3">3 pts</span><span>Bon résultat + bon écart</span></div>
-            <div class="ranking-rule-item"><span class="pts-badge pts1">1 pt</span><span>Bon résultat uniquement</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts3">3 pts</span><span>Score exact</span></div>
+            <div class="ranking-rule-item"><span class="pts-badge pts1">1 pt</span><span>Bon vainqueur / nul</span></div>
             <div class="ranking-rule-item"><span class="pts-badge pts0">0 pt</span><span>Mauvais pronostic</span></div>
-            <div class="ranking-rule-item"><span class="pts-badge pts5">5 pts</span><span>Phases finales : score exact</span></div>
-            <div class="ranking-rule-item"><span class="pts-badge pts3">3 pts</span><span>Phases finales : bon vainqueur</span></div>
         </div></div>`;
     }
 
@@ -1147,9 +1950,29 @@ class App{
         }).sort((a,b)=>b.total-a.total);
     }
 
+    renderDates(){
+        const dates={
+            '📅 Phase de Groupes':'11 juin - 30 juin 2026',
+            '🏅 16es de finale':'3 juillet - 4 juillet 2026',
+            '🏆 8es de finale':'6 juillet - 7 juillet 2026',
+            '⭐ Quarts de finale':'9 juillet - 10 juillet 2026',
+            '👑 Demi-finales':'12 juillet - 13 juillet 2026',
+            '🥉 Match 3e place':'15 juillet 2026',
+            '🎖️ FINALE':'16 juillet 2026'
+        };
+        const html=Object.entries(dates).map(([phase,date])=>`
+            <div style="background:#f8f9fa;border-radius:10px;padding:20px;border-left:4px solid #007bff">
+                <div style="font-size:18px;font-weight:bold;margin-bottom:10px">${phase}</div>
+                <div style="font-size:14px;color:#666">${date}</div>
+            </div>
+        `).join('');
+        document.getElementById('datesList').innerHTML=html;
+    }
+
     renderSetup(){
         const d=this.d();
         const ai=document.getElementById('newAdminCode');if(ai)ai.value=d.adminCode||'admin2026';
+        updateAutoSyncUI();
         document.getElementById('playersSetup').innerHTML=d.players.map((p,i)=>`
             <div class="player-setup-card">
                 <div class="player-setup-num">${i+1}</div>
@@ -1247,7 +2070,11 @@ class App{
         if(!newCode){alert('⚠️ Le code admin ne peut pas être vide !');return;}
         if(newCode.length<4){alert('⚠️ Le code doit faire au moins 4 caractères !');return;}
         if(!confirm(`Changer le code admin pour « ${newCode} » ?`))return;
-        const d=this.d();d.adminCode=newCode;this.save(d);alert('✅ Code admin mis à jour !');
+        const d=this.d();d.adminCode=newCode;this.save(d);
+        // Mettre à jour la session pour rester connecté après refresh
+        const session=JSON.parse(localStorage.getItem('cdm2026_session')||'{}');
+        if(session.isAdmin){session.code=newCode;localStorage.setItem('cdm2026_session',JSON.stringify(session));}
+        alert('✅ Code admin mis à jour !');
     }
 
     changeOwnPassword(){
@@ -1405,6 +2232,181 @@ const app=new App();
     const obs=new MutationObserver(scheduleTwemoji);
     targets.forEach(t=>{if(t)obs.observe(t,{childList:true,subtree:true});});
 })();
+
+// Canvas animé (fond étoilé + ballons flottants) - logique inspirée du design ludo
+(function(){
+    const canvas=document.getElementById('bgCanvas');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    let W,H,particles=[],balls=[];
+
+    function resize(){
+        W=canvas.width=window.innerWidth;
+        H=canvas.height=window.innerHeight;
+    }
+    window.addEventListener('resize',resize);
+    resize();
+
+    // Étoiles scintillantes
+    for(let i=0;i<120;i++){
+        particles.push({
+            x:Math.random()*2000,
+            y:Math.random()*2000,
+            r:Math.random()*1.5+0.3,
+            a:Math.random(),
+            speed:Math.random()*0.003+0.001,
+            pulse:Math.random()*Math.PI*2
+        });
+    }
+
+    // Ballons / emojis flottants très discrets
+    const ballEmojis=['⚽','🏆','⭐','🥅','🎉'];
+    for(let i=0;i<6;i++){
+        balls.push({
+            x:Math.random()*2000,
+            y:Math.random()*2000,
+            size:Math.random()*18+10,
+            vx:(Math.random()-0.5)*0.3,
+            vy:-Math.random()*0.4-0.1,
+            opacity:Math.random()*0.06+0.02,
+            emoji:ballEmojis[Math.floor(Math.random()*ballEmojis.length)],
+            rot:Math.random()*Math.PI*2,
+            rotSpeed:(Math.random()-0.5)*0.01
+        });
+    }
+
+    let t=0;
+    function animate(){
+        ctx.clearRect(0,0,W,H);
+
+        // Gradient de fond sombre
+        const grad=ctx.createLinearGradient(0,0,W,H);
+        grad.addColorStop(0,'#07091a');
+        grad.addColorStop(0.5,'#0e1428');
+        grad.addColorStop(1,'#182040');
+        ctx.fillStyle=grad;
+        ctx.fillRect(0,0,W,H);
+
+        // Lueurs colorées fixes très subtiles
+        const glows=[
+            {x:0.15*W,y:0.3*H,r:300,c:'rgba(200,16,46,0.04)'},
+            {x:0.85*W,y:0.7*H,r:350,c:'rgba(0,48,135,0.06)'},
+            {x:0.5*W, y:0.1*H,r:250,c:'rgba(255,215,0,0.03)'},
+        ];
+        glows.forEach(o=>{
+            const g=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);
+            g.addColorStop(0,o.c);
+            g.addColorStop(1,'transparent');
+            ctx.fillStyle=g;
+            ctx.beginPath();
+            ctx.arc(o.x,o.y,o.r,0,Math.PI*2);
+            ctx.fill();
+        });
+
+        // Étoiles scintillantes
+        t+=0.01;
+        particles.forEach(p=>{
+            p.pulse+=p.speed;
+            const alpha=(Math.sin(p.pulse)*0.5+0.5)*0.5+0.05;
+            ctx.beginPath();
+            ctx.arc(p.x%W,p.y%H,p.r,0,Math.PI*2);
+            ctx.fillStyle=`rgba(255,255,255,${alpha})`;
+            ctx.fill();
+        });
+
+        // Ballons / emojis flottants
+        balls.forEach(b=>{
+            b.x+=b.vx;
+            b.y+=b.vy;
+            b.rot+=b.rotSpeed;
+            if(b.y<-50){b.y=H+50;b.x=Math.random()*W;}
+            if(b.x<-50){b.x=W+50;}
+            if(b.x>W+50){b.x=-50;}
+            ctx.save();
+            ctx.translate(b.x,b.y);
+            ctx.rotate(b.rot);
+            ctx.globalAlpha=b.opacity;
+            ctx.font=`${b.size}px serif`;
+            ctx.textAlign='center';
+            ctx.textBaseline='middle';
+            ctx.fillText(b.emoji,0,0);
+            ctx.restore();
+        });
+
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+})();
+
+// Animation confettis de lumière pour le drapeau Algérie
+(function(){
+    const canvas=document.getElementById('alger-confetti');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    let W=128,H=96,particles=[];
+    
+    function resize(){
+        const isGroupView=document.body.classList.contains('view-group');
+        W=isGroupView?48:128;
+        H=isGroupView?36:96;
+        canvas.width=W;
+        canvas.height=H;
+    }
+    
+    resize();
+    
+    // Observer les changements de vue pour redimensionner
+    const observer=new MutationObserver(()=>resize());
+    observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+    
+    // Créer des particules de lumière
+    for(let i=0;i<30;i++){
+        particles.push({
+            x:Math.random()*W,
+            y:Math.random()*H,
+            vx:(Math.random()-0.5)*0.5,
+            vy:(Math.random()-0.5)*0.5,
+            size:Math.random()*3+1,
+            opacity:Math.random()*0.5+0.2,
+            hue:Math.random()*60+30 // Couleurs chaudes (jaune-orange)
+        });
+    }
+    
+    function animate(){
+        ctx.clearRect(0,0,W,H);
+        
+        particles.forEach(p=>{
+            p.x+=p.vx;
+            p.y+=p.vy;
+            
+            // Rebond sur les bords
+            if(p.x<0||p.x>W)p.vx*=-1;
+            if(p.y<0||p.y>H)p.vy*=-1;
+            
+            // Clignotement léger
+            p.opacity+=Math.sin(Date.now()*0.005)*0.01;
+            if(p.opacity<0.1)p.opacity=0.1;
+            if(p.opacity>0.7)p.opacity=0.7;
+            
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+            ctx.fillStyle=`hsla(${p.hue},100%,70%,${p.opacity})`;
+            ctx.fill();
+            
+            // Effet de brillance
+            ctx.beginPath();
+            ctx.arc(p.x,p.y,p.size*0.5,0,Math.PI*2);
+            ctx.fillStyle=`hsla(${p.hue},100%,90%,${p.opacity*0.5})`;
+            ctx.fill();
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+})();
 </script>
+<script src="chat.js"></script>
 </body>
 </html>
