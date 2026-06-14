@@ -689,9 +689,8 @@ body::before {
 .main-nav {
     display: flex;
     position: relative;
-    padding: 0 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    padding: 0;
+    overflow: visible;
     background: rgba(0,0,0,0.25);
     border-top: 1px solid rgba(255,255,255,0.06);
 }
@@ -701,21 +700,24 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 12px 22px;
+    gap: 2px;
+    padding: 10px 0;
+    flex: 1 1 0;
+    min-width: 0;
     background: none;
     border: none;
     color: rgba(255,255,255,0.4);
     cursor: pointer;
     font-family: var(--font);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     transition: var(--transition);
     position: relative;
     white-space: nowrap;
-    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .nav-tab::after {
     content: '';
@@ -1522,7 +1524,8 @@ body.is-admin .match-header { padding:8px 14px; gap:8px; }
   .header-title  { font-size:13px; letter-spacing:2px; }
   .header-trophy { font-size:28px; }
   .header-subtitle { display:none; }
-  .nav-tab { padding:10px 12px; }
+  .nav-tab { padding:8px 0; font-size:9px; }
+  .nav-icon { font-size:16px; }
   .tab-content { padding:20px 15px; }
   .team-name { font-size:14px; }
   .team-flag-big { font-size:38px; }
