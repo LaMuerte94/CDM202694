@@ -1221,7 +1221,7 @@ class App{
     buildGoogleCard(match){
         const d=this.d(),result=d.results[match.id]||{};
         const hasResult=result.s1!==undefined&&result.s2!==undefined;
-        const msBefore=msBeforeMatch(match.date,match.time,matchOffset(match.stadium));
+        const msBefore=msBeforeMatch(match.date,match.time);
         const isLive=msBefore!==null&&msBefore<0&&msBefore>-MATCH_LIVE_WINDOW_MS&&!hasResult;
         const isAdmin=currentUser.isAdmin,me=currentUser.name;
         const myBet=d.bets[me]?.[match.id]||{};
