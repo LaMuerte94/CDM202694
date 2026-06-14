@@ -666,6 +666,7 @@ function refreshActiveTab(){
     else if(active.id==='playoffs')app.renderPlayoffs(document.getElementById('phaseFilter').value);
     else if(active.id==='ranking')app.renderRanking();
     else if(active.id==='setup')app.renderSetup();
+    tickCountdowns();
 }
 
 function startPolling(){
@@ -751,7 +752,8 @@ function tryAutoLogin(d){
             if(player&&(player.code===s.code||!player.code)){currentUser={name:player.name,isAdmin:false};startApp();return;}
         }
     }catch(e){}
-    localStorage.removeItem('cdm2026_session');
+    // Ne pas supprimer la session si on n'a pas de données joueurs (Supabase indisponible au chargement)
+    if((d.players||[]).length>0) localStorage.removeItem('cdm2026_session');
 }
 
 function onLoginNameChange(){
@@ -824,6 +826,7 @@ function startApp(){
     startPolling();
     startCountdown();
     startAutoSync();
+    tickCountdowns();
 }
 
 function logout(){

@@ -1570,8 +1570,23 @@ body.is-admin .match-header { padding:8px 14px; gap:8px; }
   .gp-flags { font-size:12px; }
   .dsh-groups { display:none; }
   .filters-bar { padding:6px 8px; }
-  .goog-grid { grid-template-columns:1fr; gap:8px; padding:8px; }
+  /* Cartes match mobile */
+  .tab-content { padding:10px 8px; }
+  .goog-grid { grid-template-columns:1fr; gap:6px; padding:6px; }
+  .gcmc { padding:10px 12px; }
   .gcmc-flag { font-size:17px; }
   .gcmc-tname { font-size:13px; }
   .gcmc-score { font-size:16px; }
+  .gcmc-top { margin-bottom:6px; }
+  .gcmc-teams { gap:4px; margin-bottom:6px; }
+  /* Countdown visible et compact dans les cartes */
+  .match-countdown { font-size:12px; padding:4px 10px; margin:4px 0; border-radius:8px; }
+  .gcmc-bet-row { padding-top:6px; }
+  /* Bannière matchs à venir */
+  .upcoming-matches-banner { padding:12px; border-radius:12px; margin-bottom:16px; }
+  .upcoming-header { font-size:13px; margin-bottom:10px; }
+  .upcoming-item { padding:10px; gap:8px; }
+  .up-tname { font-size:12px; }
+  .up-flag { font-size:16px; }
+  .upcoming-item .match-countdown { font-size:10px; padding:2px 6px; }
 }
