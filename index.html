@@ -962,6 +962,10 @@ class App{
         this._view='date';
         document.body.classList.remove('view-group');
         document.body.classList.add('view-date');
+        const btnD=document.getElementById('btn-view-date');
+        const btnG=document.getElementById('btn-view-group');
+        if(btnD)btnD.classList.add('tgl-active');
+        if(btnG)btnG.classList.remove('tgl-active');
         this.showTab(savedTab);
     }
 
