@@ -958,12 +958,10 @@ class App{
         }
     }
     init(){
-        // Restaurer l'état depuis localStorage
         const savedTab=localStorage.getItem('cdm2026_tab')||'matches';
-        const savedView=localStorage.getItem('cdm2026_view')||'date';
-        this._view=savedView;
-        document.body.classList.toggle('view-group',savedView==='group');
-        document.body.classList.toggle('view-date',savedView==='date');
+        this._view='date';
+        document.body.classList.remove('view-group');
+        document.body.classList.add('view-date');
         this.showTab(savedTab);
     }
 

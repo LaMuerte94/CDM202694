@@ -1336,7 +1336,18 @@ body.is-admin .match-header { padding:8px 14px; gap:8px; }
 }
 @media (max-width: 576px) {
     .upcoming-list {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        gap: 10px;
+        padding-bottom: 6px;
+    }
+    .upcoming-item {
+        flex: 0 0 200px;
+        scroll-snap-align: start;
+        min-width: 0;
     }
 }
 .upcoming-item {
